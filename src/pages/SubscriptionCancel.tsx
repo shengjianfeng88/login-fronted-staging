@@ -41,7 +41,7 @@ const SubscriptionCancel: React.FC = () => {
           <div className="flex flex-col gap-3">
             <button
               onClick={handleTryAgain}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              className="w-full bg-brand-primary hover:opacity-90 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
               Retry Payment
             </button>
