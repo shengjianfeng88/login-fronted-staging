@@ -25,6 +25,10 @@ const ReferralPage: React.FC = () => {
   const [copyButtonText, setCopyButtonText] = useState("Copy Link");
   const copyTimeoutRef = React.useRef<number | null>(null);
 
+  // Subscription (membership) status
+  const [isMember, setIsMember] = useState(false);
+  const [isMemberLoading, setIsMemberLoading] = useState(true);
+
   useEffect(() => {
     return () => {
       if (copyTimeoutRef.current) {
@@ -72,6 +76,33 @@ const ReferralPage: React.FC = () => {
     };
 
     fetchReferralInfo();
+  }, []);
+
+  // Fetch subscription status to determine membership
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setIsMember(false);
+      setIsMemberLoading(false);
+      return;
+    }
+
+    axiosInstance
+      .get(getApiUrl("SUBSCRIPTION_API", "/api/subscription/status"), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        setIsMember(!!response.data?.has_subscription);
+      })
+      .catch(() => {
+        setIsMember(false);
+      })
+      .finally(() => {
+        setIsMemberLoading(false);
+      });
   }, []);
 
   const copyReferralLink = () => {
@@ -141,7 +172,7 @@ const ReferralPage: React.FC = () => {
             <div className="bg-[linear-gradient(252.2deg,#FDE9FF_3.17%,#DDF8FB_99.32%)] rounded-lg p-8 mb-8 max-w-4xl w-full mx-auto border border-gray-200">
               <div className="text-center mb-8">
                 <div className="text-center mb-10">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-violet-600 rounded-full mb-5 shadow-md shadow-violet-200">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-primary rounded-full mb-5 shadow-md">
                     <Share2 size={40} className="text-white" />
                   </div>
                   <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -178,15 +209,15 @@ const ReferralPage: React.FC = () => {
                     Referral Rewards
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div className="bg-violet-100/60 rounded-lg p-4 flex items-center gap-4 border border-violet-200/80">
+                    <div className="bg-brand-secondary/30 rounded-lg p-4 flex items-center gap-4 border border-brand-secondary/60">
                       <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
-                        <User className="text-violet-600" size={20} />
+                        <User className="text-brand-primary" size={20} />
                       </div>
                       <div className="text-left">
                         <div className="font-semibold text-gray-800">
                           You Get
                         </div>
-                        <div className="text-sm text-violet-700 font-medium">
+                        <div className="text-sm text-brand-primary font-medium">
                           +20 credits per friend
                         </div>
                       </div>
@@ -206,36 +237,53 @@ const ReferralPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-blue-100/60 border border-blue-200/80 rounded-lg p-4 flex items-start gap-4 mb-8">
-                    <Info
-                      className="text-blue-600 mt-0.5 flex-shrink-0"
-                      size={16}
-                    />
-                    <div className="text-left">
-                      <div className="font-semibold text-gray-800 mb-1">
-                        Plus Member Bonus
+                  {!isMemberLoading && (isMember ? (
+                    <div className="bg-blue-100/60 border border-blue-200/80 rounded-lg p-4 flex items-start gap-4 mb-8">
+                      <Info
+                        className="text-blue-600 mt-0.5 flex-shrink-0"
+                        size={16}
+                      />
+                      <div className="text-left">
+                        <div className="font-semibold text-gray-800 mb-1">
+                          Plus Member Bonus
+                        </div>
+                        <p className="text-sm text-blue-800">
+                          If your friend upgrades to Plus:{" "}
+                          <span className="font-medium">
+                            Automatic 20% off for next billing cycle + 20 bonus
+                            credits
+                          </span>
+                        </p>
                       </div>
-                      <p className="text-sm text-blue-800">
-                        If your friend upgrades to Plus:{" "}
-                        <span className="font-medium">
-                          Automatic 20% off for next billing cycle + 20 bonus
-                          credits
-                        </span>
-                      </p>
                     </div>
-                  </div>
+                  ) : (
+                    <div
+                      className="rounded-lg p-4 flex items-start gap-4 mb-8 border"
+                      style={{ backgroundColor: "#FFFDE4", borderColor: "#FFEBC6" }}
+                    >
+                      <Info className="mt-0.5 flex-shrink-0" size={16} />
+                      <div className="text-left">
+                        <div className="font-semibold mb-1 text-[#995202]">
+                          Free Member Limit
+                        </div>
+                        <p className="text-sm text-[#995202]">
+                          Maximum 5 referrals lifetime • Credits don't rollover monthly
+                        </p>
+                      </div>
+                    </div>
+                  ))}
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <input
                       type="text"
                       value={isReferralLoading ? "Loading..." : referralError ? "Not available" : referralData?.referralLink || ""}
                       readOnly
-                      className="w-full sm:w-auto flex-grow px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50/80 text-center sm:text-left focus:ring-2 focus:ring-violet-300 focus:outline-none transition-shadow"
+                      className="w-full sm:w-auto flex-grow px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50/80 text-center sm:text-left focus:ring-2 focus:ring-brand-secondary focus:outline-none transition-shadow"
                     />
                     <button
                       onClick={copyReferralLink}
                       disabled={isReferralLoading || !referralData?.referralLink}
-                      className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 disabled:bg-violet-400 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 font-semibold transition-all shadow-md hover:shadow-lg active:scale-95"
+                      className="w-full sm:w-auto bg-brand-primary hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 font-semibold transition-all shadow-md hover:shadow-lg active:scale-95"
                     >
                       <Copy size={16} />
                       {copyButtonText}
