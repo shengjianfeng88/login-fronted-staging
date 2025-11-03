@@ -22,6 +22,10 @@ export default {
       colors: {
         orange: 'rgb(255,110,0)', 
         primaryBlack: '#191C1F',
+        brand: {
+          primary: '#6A5ACD',
+          secondary: '#C7C0F0',
+        },
       },
       translate: {
         '-100px': '-100px',
