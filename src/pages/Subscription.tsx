@@ -202,12 +202,7 @@ const Subscription: React.FC = () => {
     return diffDays > 0 ? diffDays : 0;
   };
 
-  // Helper function to get available credits = freeTryOnQuota + credits
-  const getAvailableCredits = () => {
-    const freeTryOns = quotaData?.freeTryOnQuota ?? 0;
-    const creditBalance = quotaData?.credits ?? 0;
-    return freeTryOns + creditBalance;
-  };
+  // Daily free credits = freeTryOnQuota * 5 (computed in StatsCards)
 
   // Derived helpers for selected plan display
   const selectedPlanId = billingCycle === "monthly" ? "plus_monthly" : "plus_annual";
@@ -431,10 +426,12 @@ const Subscription: React.FC = () => {
                 {/* Stats Section */}
                 <StatsCards
                   isQuotaLoading={isQuotaLoading}
-                  availableCredits={getAvailableCredits()}
                   hasPlusPlan={hasPlusPlan()}
                   daysUntilRenewal={calculateDaysUntilRenewal()}
+                  freeTryOnQuota={quotaData?.freeTryOnQuota ?? 0}
+                  credits={quotaData?.credits ?? 0}
                 />
+
 
                 {/* Actions Section */}
                 {/* <div className="flex justify-between items-center">
