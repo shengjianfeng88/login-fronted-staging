@@ -24,7 +24,7 @@ import CreditsReceived from './pages/CreditsReceived';
 import Register from './pages/Register';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionCancel from './pages/SubscriptionCancel';
-console.log('environment', 'staging.........');
+console.log('environment', 'staging.......,,..');
 
 function App() {
   const googleClientId =
@@ -62,7 +62,7 @@ function App() {
               <Route path='/account-settings' element={<AccountSettings />} />
               <Route path='/subscription' element={<Subscription />} />
               <Route path='/referral' element={<ReferralPage />} />
-                <Route path='/credits-received' element={<CreditsReceived />} />
+              <Route path='/credits-received' element={<CreditsReceived />} />
               <Route path='/subscription/success' element={<SubscriptionSuccess />} />
               <Route path='/subscription/cancel' element={<SubscriptionCancel />} />
             </Routes>
