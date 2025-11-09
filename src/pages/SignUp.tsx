@@ -198,6 +198,12 @@ const SignUp = () => {
         const accessToken = res.data.accessToken;
         // Store token in localStorage
         localStorage.setItem("accessToken", accessToken);
+        if (res.data.refreshToken) {
+          localStorage.setItem("refreshToken", res.data.refreshToken);
+        }
+        if (res.data.userId) {
+          localStorage.setItem("userId", res.data.userId);
+        }
 
         // Decode JWT to get user info including picture
         let userEmail = res.data.email || '';
@@ -209,6 +215,8 @@ const SignUp = () => {
         } catch (error) {
           console.error('Failed to decode JWT:', error);
         }
+
+        localStorage.setItem("email", userEmail);
 
         // Update Redux store with complete user information
         dispatch(setUser({
