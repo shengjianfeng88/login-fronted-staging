@@ -161,11 +161,13 @@ const SignIn = () => {
         accessToken: res.data.accessToken,
       });
       navigate("/done");
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof z.ZodError) {
         setError(err.errors[0].message);
-      } else {
+      } else if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || "Login failed");
+      } else {
+        setError("Login failed");
       }
     } finally {
       setIsLoading(false);
@@ -210,8 +212,17 @@ const SignIn = () => {
     }
   };
 
-  const handleError = () => {
-    console.log("Google Sign-In was unsuccessful. Try again later.");
+  const handleError = (error: Error | { error?: string; error_description?: string }) => {
+    console.error("Google Sign-In error:", error);
+    const errorObj = error as { error?: string; error_description?: string };
+    if (errorObj?.error === "redirect_uri_mismatch") {
+      console.error("Redirect URI mismatch. Current origin:", window.location.origin);
+      console.error("Current pathname:", window.location.pathname);
+      console.error("Full URL:", window.location.href);
+      setError("Google 登录配置错误：重定向 URI 不匹配。请检查 Google Cloud Console 配置。");
+    } else {
+      setError("Google 登录失败，请稍后重试。");
+    }
   };
 
   const login = useGoogleLogin({
