@@ -129,10 +129,7 @@ const SignIn = () => {
       //       } else {
       //         setError("An error occurred. Please try again.");
       // =======
-      const productionLoginEndpoint = "https://staging-api-auth.faishion.ai/auth/login";
-      const stagingLoginEndpoint = "https://login-fronted-staging.vercel.app/auth/login";
-      const loginEndpoint = window.location.hostname === "login-fronted-staging.vercel.app" ? stagingLoginEndpoint : productionLoginEndpoint;
-      const res = await axios.post(loginEndpoint, {
+      const res = await axiosInstance.post("/auth/login", {
         ...validatedData,
         rememberMe,
       });
@@ -178,7 +175,10 @@ const SignIn = () => {
   const handleGoogleLoginSuccess = async (response: CredentialResponse) => {
     try {
       const token = response.credential;
-      const res = await axiosInstance.post("/auth/google-auth", { token });
+      const productionLoginEndpoint = "https://staging-api-auth.faishion.ai/auth/login";
+      const stagingLoginEndpoint = "https://login-fronted-staging.vercel.app/auth/login";
+      const loginEndpoint = window.location.hostname === "login-fronted-staging.vercel.app" ? stagingLoginEndpoint : productionLoginEndpoint;
+      const res = await axios.post(loginEndpoint, { token });
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
 
