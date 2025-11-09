@@ -19,6 +19,7 @@ import image1 from "@/assets/image_1.jpg";
 import image2 from "@/assets/image_2.jpg";
 import image3 from "@/assets/image_3.jpg";
 import googleLogo from "@/assets/g-logo.png";
+import axios from "axios";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -128,7 +129,10 @@ const SignIn = () => {
       //       } else {
       //         setError("An error occurred. Please try again.");
       // =======
-      const res = await axiosInstance.post("/auth/login", {
+      const productionLoginEndpoint = "https://staging-api-auth.faishion.ai/auth/login";
+      const stagingLoginEndpoint = "https://login-fronted-staging.vercel.app/auth/login";
+      const loginEndpoint = window.location.hostname === "login-fronted-staging.vercel.app" ? stagingLoginEndpoint : productionLoginEndpoint;
+      const res = await axios.post(loginEndpoint, {
         ...validatedData,
         rememberMe,
       });
@@ -266,8 +270,7 @@ const SignIn = () => {
                     name="email"
                     placeholder="Email"
                     onChange={handleEmailChange}
-                    className={`w-full h-10 border rounded-lg px-4 text-sm ${
-                      emailError ? "border-red-500" : "border-[#DADCE0]"
+                    className={`w-full h-10 border rounded-lg px-4 text-sm ${emailError ? "border-red-500" : "border-[#DADCE0]"
                       }`}
                     autoComplete="email"
                   />
@@ -378,8 +381,7 @@ const SignIn = () => {
                   <img
                     src={images[activeSlide].left}
                     alt="Fashion model left"
-                    className={`w-full h-full object-cover transition-opacity duration-200 ease-in-out ${
-                      isTransitioning ? "opacity-60" : "opacity-100"
+                    className={`w-full h-full object-cover transition-opacity duration-200 ease-in-out ${isTransitioning ? "opacity-60" : "opacity-100"
                       }`}
                   />
                 </div>
@@ -403,8 +405,7 @@ const SignIn = () => {
                   <img
                     src={images[activeSlide].right}
                     alt="Fashion model right"
-                    className={`w-full h-full object-cover transition-opacity duration-200 ease-in-out ${
-                      isTransitioning ? "opacity-60" : "opacity-100"
+                    className={`w-full h-full object-cover transition-opacity duration-200 ease-in-out ${isTransitioning ? "opacity-60" : "opacity-100"
                       }`}
                   />
                 </div>
@@ -433,22 +434,19 @@ const SignIn = () => {
             <div className="flex justify-center pb-4 md:pb-6 space-x-3 md:space-x-4 lg:space-x-5">
               <button
                 onClick={() => changeSlide(0)}
-                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors duration-300 ${
-                  activeSlide === 0 ? "bg-gray-800" : "bg-gray-400"
+                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors duration-300 ${activeSlide === 0 ? "bg-gray-800" : "bg-gray-400"
                   }`}
                 aria-label="Show slide 1"
               ></button>
               <button
                 onClick={() => changeSlide(1)}
-                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors duration-300 ${
-                  activeSlide === 1 ? "bg-gray-800" : "bg-gray-400"
+                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors duration-300 ${activeSlide === 1 ? "bg-gray-800" : "bg-gray-400"
                   }`}
                 aria-label="Show slide 2"
               ></button>
               <button
                 onClick={() => changeSlide(2)}
-                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors duration-300 ${
-                  activeSlide === 2 ? "bg-gray-800" : "bg-gray-400"
+                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors duration-300 ${activeSlide === 2 ? "bg-gray-800" : "bg-gray-400"
                   }`}
                 aria-label="Show slide 3"
               ></button>
