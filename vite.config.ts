@@ -20,13 +20,13 @@ export default defineConfig({
     proxy: {
       // 主要API代理 - 代理到认证服务
       '/v1': {
-        target: 'https://api-auth.faishion.ai',
+        target: 'https://staging-api-auth.faishion.ai',
         changeOrigin: true,
         secure: true,
         configure: (proxy) => {
           proxy.on('proxyReq', (_proxyReq, req) => {
             console.log(
-              `Proxy request: ${req.method} ${req.url} -> https://api-auth.faishion.ai${req.url}`
+              `Proxy request: ${req.method} ${req.url} -> https://staging-api-auth.faishion.ai${req.url}`
             );
           });
           proxy.on('proxyRes', (proxyRes, req) => {

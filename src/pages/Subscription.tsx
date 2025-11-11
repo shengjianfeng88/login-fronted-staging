@@ -113,10 +113,8 @@ const Subscription: React.FC = () => {
       });
 
     // Fetch credits quota (freeTryOnQuota + credits)
-    // TEMP: use staging endpoint until prod is deployed; replace with
-    // https://api-auth.faishion.ai/v1/auth/credits/quota once available in production
     axiosInstance
-      .get("https://staging-api-auth.faishion.ai/v1/auth/credits/quota", {
+      .get(getApiUrl("AUTH_API", "/auth/credits/quota"), {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

@@ -6,8 +6,8 @@ export const isProduction = import.meta.env.PROD;
 export const API_DOMAINS = {
   // 主要认证API
   AUTH_API: isDevelopment
-    ? "" // 开发环境通过 axiosInstance.baseURL 指向 https://api-auth.faishion.ai/v1，避免重复 /v1
-    : "https://api-auth.faishion.ai/v1", // 生产环境使用实际域名
+    ? "" // 开发环境通过 axiosInstance.baseURL 指向 https://staging-api-auth.faishion.ai/v1，避免重复 /v1
+    : "https://staging-api-auth.faishion.ai/v1", // 生产环境使用实际域名
 
   // 试穿服务API (第三方服务，不通过proxy)
   TRYON_API: "https://tryon-advanced-canary.faishion.ai",
