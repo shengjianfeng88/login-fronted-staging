@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Check, X, Crown, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Modal, message } from "antd";
+import { message } from "antd";
 import AccountSidebar from "../components/AccountSidebar";
 import axiosInstance from "@/utils/axiosInstance";
 import { getApiUrl } from "../config/api";
 import axios from "axios";
+import SubscriptionHeader from "@/components/subscription/SubscriptionHeader";
+import StatsCards from "@/components/subscription/StatsCards";
+import FreePlanCard from "@/components/subscription/FreePlanCard";
+import PlusPlanCard from "@/components/subscription/PlusPlanCard";
+import CancelSubscriptionModal from "@/components/subscription/CancelSubscriptionModal";
 
 const Subscription: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +22,11 @@ const Subscription: React.FC = () => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [subscriptionCancelled, setSubscriptionCancelled] = useState(false);
+
+  // Billing cycle selection for checkout
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
+    "monthly"
+  );
 
   // Subscription status state
   const [subscriptionData, setSubscriptionData] = useState<{
@@ -43,40 +53,110 @@ const Subscription: React.FC = () => {
     null
   );
 
-  // Fetch subscription status on component mount
+  // Credits quota state (free try-ons + credits)
+  const [quotaData, setQuotaData] = useState<
+    | {
+      userType: string;
+      freeTryOnQuota: number;
+      lastQuotaReset?: string;
+      nextResetTime?: string;
+      credits: number;
+    }
+    | null
+  >(null);
+  const [isQuotaLoading, setIsQuotaLoading] = useState(true);
+
+  // Plans data for dynamic pricing/details
+  type PlanInfo = {
+    name: string;
+    description: string;
+    credits_per_cycle: number;
+    billing_cycle: "monthly" | "annual" | string;
+    amount_cents: number;
+    currency: string;
+    amount_display: string;
+    credits_per_dollar?: number;
+  };
+  const [plans, setPlans] = useState<Record<string, PlanInfo>>({});
+  const [isPlansLoading, setIsPlansLoading] = useState(true);
+
+  // Fetch subscription status and credits quota on component mount
   useEffect(() => {
-    const fetchSubscriptionStatus = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        if (!token) {
-          console.error("No authentication token found");
-          setSubscriptionError("No authentication token found");
-          setIsSubscriptionLoading(false);
-          return;
-        }
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      console.error("No authentication token found");
+      setSubscriptionError("No authentication token found");
+      setIsSubscriptionLoading(false);
+      setIsQuotaLoading(false);
+      return;
+    }
 
-        const response = await axiosInstance.get(
-          getApiUrl("SUBSCRIPTION_API", "/api/subscription/status"),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
+    // Fetch subscription status
+    axiosInstance
+      .get(getApiUrl("SUBSCRIPTION_API", "/api/subscription/status"), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
         setSubscriptionData(response.data);
         console.log("Subscription data:", response.data);
         setSubscriptionError(null);
-      } catch (error: unknown) {
+      })
+      .catch((error: unknown) => {
         console.error("Subscription status error:", error);
         setSubscriptionError("Failed to load subscription status");
-      } finally {
+      })
+      .finally(() => {
         setIsSubscriptionLoading(false);
-      }
-    };
+      });
 
-    fetchSubscriptionStatus();
+    // Fetch credits quota (freeTryOnQuota + credits)
+    axiosInstance
+      .get(getApiUrl("AUTH_API", "/auth/credits/quota"), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        const { quota, credits } = response.data || {};
+        setQuotaData({
+          userType: quota?.userType || "free",
+          freeTryOnQuota: quota?.freeTryOnQuota ?? 0,
+          lastQuotaReset: quota?.lastQuotaReset,
+          nextResetTime: quota?.nextResetTime,
+          credits: typeof credits === "number" ? credits : 0,
+        });
+      })
+      .catch((error: unknown) => {
+        console.error("Quota fetch error:", error);
+      })
+      .finally(() => {
+        setIsQuotaLoading(false);
+      });
+
+    // Fetch available subscription plans (no auth required)
+    const plansEndpoint = getApiUrl("SUBSCRIPTION_API", "/api/plans");
+
+    axiosInstance
+      .get(plansEndpoint)
+      .then((response) => {
+        const { plans: plansMap } = response.data || {};
+        if (plansMap && typeof plansMap === "object") {
+          setPlans(plansMap);
+        } else {
+          setPlans({});
+        }
+      })
+      .catch((error: unknown) => {
+        console.error("Plans fetch error:", error);
+        setPlans({});
+      })
+      .finally(() => {
+        setIsPlansLoading(false);
+      });
   }, [navigate]);
 
   // Helper function to check if user has plus plan
@@ -105,14 +185,14 @@ const Subscription: React.FC = () => {
     // Stripe typically uses a 30-day billing cycle for monthly subscriptions
     // The server time appears to be in UTC format (e.g., 2025-10-18T23:27:13.681000)
     const createdAt = new Date(subscriptionData.subscription.created_at);
-    
+
     // Add exactly 30 days for the renewal date (standard Stripe monthly cycle)
     const renewalDate = new Date(createdAt);
     renewalDate.setDate(renewalDate.getDate() + 30);
 
     // Get current time in UTC to match server time
     const now = new Date();
-    
+
     // Calculate the difference in days
     const diffTime = renewalDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -120,7 +200,15 @@ const Subscription: React.FC = () => {
     return diffDays > 0 ? diffDays : 0;
   };
 
-  const handleChoosePlan = async () => {
+  // Daily free credits = freeTryOnQuota * 5 (computed in StatsCards)
+
+  // Derived helpers for selected plan display
+  const selectedPlanId = billingCycle === "monthly" ? "plus_monthly" : "plus_annual";
+  const selectedPlan = plans[selectedPlanId];
+  const getSelectedAmountDisplay = () => selectedPlan?.amount_display || (billingCycle === "monthly" ? "$9.99" : "$108.00");
+  const getSelectedPriceLabel = () => (billingCycle === "monthly" ? "per month" : "per year");
+
+  const handleChoosePlan = async (cycle: "monthly" | "annual" = billingCycle) => {
     setIsLoading(true);
 
     try {
@@ -131,9 +219,12 @@ const Subscription: React.FC = () => {
         return;
       }
 
+      // Map cycle to plan_id
+      const planId = cycle === "monthly" ? "plus_monthly" : "plus_annual";
+
       const response = await axiosInstance.post(
         getApiUrl("SUBSCRIPTION_API", "/api/create-checkout-session"),
-        {},
+        { plan_id: planId },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -239,19 +330,18 @@ const Subscription: React.FC = () => {
     }
   };
 
-  const PlanFeature: React.FC<{ included: boolean; text: string }> = ({
-    included,
-    text,
-  }) => (
-    <div className="flex items-center gap-3">
-      {included ? (
-        <Check className="text-green-500 w-5 h-5 flex-shrink-0" />
-      ) : (
-        <X className="text-red-500 w-5 h-5 flex-shrink-0" />
-      )}
-      <span className="text-gray-700">{text}</span>
-    </div>
-  );
+  const showCancelledBadge =
+    !hasPlusPlan() &&
+    subscriptionCancelled &&
+    subscriptionData.subscription?.status === "cancelled";
+
+  const billingLabel = hasPlusPlan()
+    ? subscriptionData.subscription?.plan_type === "monthly"
+      ? "monthly billing"
+      : subscriptionData.subscription?.plan_type === "yearly"
+        ? "yearly billing"
+        : ""
+    : undefined;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -283,7 +373,7 @@ const Subscription: React.FC = () => {
             {isSubscriptionLoading ? (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
                 <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
                 </div>
               </div>
             ) : subscriptionError ? (
@@ -322,86 +412,24 @@ const Subscription: React.FC = () => {
                 )}
 
                 {/* Header Section */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-blue-100 text-blue-600 p-3 rounded-full">
-                      <Crown size={28} />
-                    </div>
-                    <div>
-                      <h1 className="text-2xl font-bold text-gray-800">
-                        {hasPlusPlan() ? "Plus Plan" : "Free Plan"}
-                      </h1>
-                      <div className="flex items-center gap-2 mt-1">
-                        {hasPlusPlan() ? (
-                          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">
-                            Active
-                          </span>
-                        ) : subscriptionCancelled &&
-                          subscriptionData.subscription?.status ===
-                          "cancelled" ? (
-                          <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold">
-                            Cancelled
-                          </span>
-                        ) : (
-                          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">
-                            Active
-                          </span>
-                        )}
-                        {hasPlusPlan() ? (
-                          <span className="text-gray-500 text-sm">
-                            {subscriptionData.subscription?.plan_type ===
-                              "monthly"
-                              ? "monthly billing"
-                              : subscriptionData.subscription?.plan_type ===
-                                "yearly"
-                                ? "yearly billing"
-                                : ""}
-                          </span>
-                        ) : (
-                          <span className="text-gray-500 text-sm">
-                            You are currently on a basic plan with basic
-                            features
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right mt-4 sm:mt-0">
-                    <div className="text-3xl font-bold text-gray-800">
-                      {hasPlusPlan()
-                        ? formatCurrency(
-                          subscriptionData.subscription?.amount || 0,
-                          subscriptionData.subscription?.currency || "usd"
-                        )
-                        : "$0"}
-                    </div>
-                    <div className="text-gray-500 text-sm">per month</div>
-                  </div>
-                </div>
+                <SubscriptionHeader
+                  hasPlusPlan={hasPlusPlan()}
+                  showCancelledBadge={showCancelledBadge}
+                  billingLabel={billingLabel}
+                  amountCents={subscriptionData.subscription?.amount}
+                  currency={subscriptionData.subscription?.currency || "usd"}
+                  formatCurrency={formatCurrency}
+                />
 
                 {/* Stats Section */}
-                {hasPlusPlan() &&
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-4 mt-4">
-                      <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-xl p-6 text-center">
-                        <div className="text-4xl font-bold text-indigo-600 mb-1">
-                          {subscriptionData.subscription?.credits_amount}
-                        </div>
-                        <div className="text-gray-500">
-                          Available Credits
-                        </div>
-                      </div>
-                      <div className="bg-white border border-gray-200 rounded-xl p-6 text-center">
-                        <div className="text-4xl font-bold text-indigo-600 mb-1">
-                          {calculateDaysUntilRenewal()} days
-                        </div>
-                        <div className="text-gray-500">
-                          Until Renewal
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                }
+                <StatsCards
+                  isQuotaLoading={isQuotaLoading}
+                  hasPlusPlan={hasPlusPlan()}
+                  daysUntilRenewal={calculateDaysUntilRenewal()}
+                  freeTryOnQuota={quotaData?.freeTryOnQuota ?? 0}
+                  credits={quotaData?.credits ?? 0}
+                />
+
 
                 {/* Actions Section */}
                 {/* <div className="flex justify-between items-center">
@@ -419,102 +447,22 @@ const Subscription: React.FC = () => {
               </div>
 
               <div className="flex flex-col lg:flex-row items-stretch justify-center gap-8 w-full">
-                {/* Free Plan Card */}
-                <div className="bg-white rounded-2xl border border-gray-200 p-8 w-full max-w-md flex flex-col h-full min-h-[600px]">
-                  <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                    Free Plan
-                  </h2>
-                  <p className="text-4xl font-bold text-gray-900 mb-1">
-                    $0{" "}
-                    <span className="text-lg font-medium text-gray-500">
-                      per month
-                    </span>
-                  </p>
-                  <hr className="my-6" />
-                  <p className="text-sm font-medium text-gray-600 mb-6">
-                    Always free
-                  </p>
-                  <div className="space-y-4 flex-grow mb-8">
-                    <PlanFeature included={true} text="50 credits / month" />
-                    <PlanFeature
-                      included={true}
-                      text="~10 try-ons (5 credits each)"
-                    />
-                    <PlanFeature
-                      included={true}
-                      text="~50 size recs (1 credit each)"
-                    />
-                    <PlanFeature
-                      included={true}
-                      text="Limited History (last 5 items)"
-                    />
-                    <PlanFeature included={true} text="Basic Prompts" />
-                    <PlanFeature included={false} text="Ads shown" />
-                  </div>
-                  {!hasPlusPlan() ? (
-                    <button className="w-full bg-gray-200 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
-                      Current Plan
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setShowCancelConfirm(true)}
-                      className="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 py-3 rounded-lg font-medium transition-colors"
-                    >
-                      Downgrade
-                    </button>
-                  )}
-                </div>
-
-                {/* Plus Plan Card */}
-                <div className="bg-purple-50 rounded-2xl border-2 border-purple-300 p-8 w-full max-w-md flex flex-col h-full min-h-[600px] relative">
-                  <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                    Plus Plan
-                  </h2>
-                  <div className="flex items-baseline gap-2 mb-4">
-                    <p className="text-4xl font-bold text-gray-900">$9.99</p>
-                    <p className="text-lg font-medium text-gray-500">
-                      per month
-                    </p>
-                    {/* <p className="text-sm text-gray-400 line-through">$9.99/mo</p> */}
-                  </div>
-
-                  <hr className="my-4" />
-                  <p className="text-sm font-medium text-gray-600 mb-6">
-                    Premium features
-                  </p>
-                  {/* <div className="bg-green-100 border border-green-200 rounded-lg p-4 mb-6 text-center">
-                    <p className="font-bold text-green-800">Limited Time Special</p>
-                    <p className="text-sm text-green-700">First three months: $6.99/mo</p>
-                    <p className="text-sm text-green-700">Then: $9.99/mo (Regular price)</p>
-                  </div> */}
-
-                  <div className="space-y-4 flex-grow mb-8">
-                    <PlanFeature
-                      included={true}
-                      text="150 credits/mo + top-ups available"
-                    />
-                    <PlanFeature included={true} text="No queue" />
-                    <PlanFeature included={true} text="Full History Access" />
-                    <PlanFeature
-                      included={true}
-                      text="Custom background prompts"
-                    />
-                    <PlanFeature included={true} text="Ad Free" />
-                  </div>
-                  {hasPlusPlan() ? (
-                    <button className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium cursor-not-allowed">
-                      Current Plan
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleChoosePlan}
-                      disabled={isLoading || isSubscriptionLoading}
-                      className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 disabled:cursor-not-allowed text-white py-3 rounded-lg font-medium transition-colors"
-                    >
-                      {isLoading ? "Processing..." : "Choose Plan"}
-                    </button>
-                  )}
-                </div>
+                <FreePlanCard
+                  hasPlusPlan={hasPlusPlan()}
+                  onDowngrade={() => setShowCancelConfirm(true)}
+                />
+                <PlusPlanCard
+                  amountDisplay={getSelectedAmountDisplay()}
+                  priceLabel={getSelectedPriceLabel()}
+                  billingCycle={billingCycle}
+                  onBillingChange={setBillingCycle}
+                  isPlansLoading={isPlansLoading}
+                  description={selectedPlan?.description}
+                  hasPlusPlan={hasPlusPlan()}
+                  onChoosePlan={() => handleChoosePlan(billingCycle)}
+                  isLoading={isLoading}
+                  isDisabled={isLoading || isSubscriptionLoading}
+                />
               </div>
             </div>
           </div>
@@ -522,32 +470,12 @@ const Subscription: React.FC = () => {
       </div>
 
       {/* Cancel Subscription Confirmation Modal */}
-      <Modal
-        title="Cancel Subscription"
+      <CancelSubscriptionModal
         open={showCancelConfirm}
-        onOk={handleCancelSubscription}
+        isCancelling={isCancelling}
+        onConfirm={handleCancelSubscription}
         onCancel={() => setShowCancelConfirm(false)}
-        okText={isCancelling ? "Cancelling..." : "Yes, Cancel"}
-        cancelText="Keep Subscription"
-        okButtonProps={{
-          loading: isCancelling,
-          danger: true,
-        }}
-        width={480}
-      >
-        <div className="py-4">
-          <p className="text-gray-600 mb-4">
-            Are you sure you want to cancel your Plus subscription?
-          </p>
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <p className="text-sm text-yellow-800">
-              <strong>Note:</strong> Your subscription will remain active until
-              the end of your current billing period. You'll continue to have
-              access to all Plus features until then.
-            </p>
-          </div>
-        </div>
-      </Modal>
+      />
     </div>
   );
 };

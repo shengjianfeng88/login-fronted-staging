@@ -7,7 +7,7 @@ import { setUser } from "@/store/features/userSlice";
 // 生产环境使用环境变量或默认值
 const apiUrl = import.meta.env.DEV
   ? "/v1"
-  : import.meta.env.VITE_API_URL || "https://api-auth.faishion.ai/v1";
+  : import.meta.env.VITE_API_URL || "https://staging-api-auth.faishion.ai/v1";
 
 const axiosInstance = axios.create({
   baseURL: apiUrl,
@@ -79,10 +79,9 @@ axiosInstance.interceptors.response.use(
 
       if (refreshToken) {
         try {
-          // 调用刷新token的API，使用指定的staging端点
-          const refreshEndpoint = "https://staging-api-auth.faishion.ai/v1/auth/refresh-token-checkout";
-          const response = await axios.post(
-            refreshEndpoint,
+          // 调用刷新token的API，使用axiosInstance确保请求通过Vite代理
+          const response = await axiosInstance.post(
+            "/auth/refresh-token-checkout",
             {
               refreshToken,
             }

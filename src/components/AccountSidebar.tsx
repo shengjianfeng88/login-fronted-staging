@@ -42,14 +42,14 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ activeTab }) => {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     const isAuthenticated = user.isAuthenticated;
-    
+
     // If user is not authenticated in store or no token in localStorage
     if (!isAuthenticated || !token) {
       message.info("Redirecting to login page...");
       navigate('/signin');
       return;
     }
-    
+
     // Only fetch subscription status if authenticated
     const fetchSubscriptionStatus = async () => {
       try {
@@ -79,7 +79,7 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ activeTab }) => {
     if (isSubscriptionLoading) {
       return (
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+          <span className="w-2 h-2 bg-brand-primary rounded-full animate-pulse"></span>
           Loading...
         </span>
       );
@@ -146,11 +146,10 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ activeTab }) => {
           {navItems.map((item) => (
             <div
               key={item.id}
-              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                activeTab === item.id
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
+              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeTab === item.id
+                ? 'bg-brand-secondary text-brand-primary'
+                : 'text-gray-700 hover:bg-gray-50'
+                }`}
               onClick={item.onClick}
             >
               {item.icon}

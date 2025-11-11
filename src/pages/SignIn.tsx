@@ -149,6 +149,8 @@ const SignIn = () => {
         console.error('Failed to decode JWT:', error);
       }
 
+      localStorage.setItem("email", userEmail);
+
       // Update Redux store with complete user information
       dispatch(setUser({
         email: userEmail,
@@ -183,6 +185,7 @@ const SignIn = () => {
       const res = await axios.post(loginEndpoint, { token });
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
+      localStorage.setItem("userId", res.data.userId);
 
       // Decode JWT to get user info including picture
       let userEmail = res.data.email || '';
@@ -194,6 +197,8 @@ const SignIn = () => {
       } catch (error) {
         console.error('Failed to decode JWT:', error);
       }
+
+      localStorage.setItem("email", userEmail);
 
       // Update Redux store with complete user information
       dispatch(setUser({
