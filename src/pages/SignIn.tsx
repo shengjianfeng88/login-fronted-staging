@@ -179,10 +179,11 @@ const SignIn = () => {
   const handleGoogleLoginSuccess = async (response: CredentialResponse) => {
     try {
       const token = response.credential;
-      const productionLoginEndpoint = "https://staging-api-auth.faishion.ai/auth/login";
-      const stagingLoginEndpoint = "https://login-fronted-staging.vercel.app/auth/login";
-      const loginEndpoint = window.location.hostname === "login-fronted-staging.vercel.app" ? stagingLoginEndpoint : productionLoginEndpoint;
-      const res = await axios.post(loginEndpoint, { token });
+      // const productionLoginEndpoint = "https://staging-api-auth.faishion.ai/auth/login";
+      // const stagingLoginEndpoint = "https://login-fronted-staging.vercel.app/auth/login";
+      // const loginEndpoint = window.location.hostname === "login-fronted-staging.vercel.app" ? stagingLoginEndpoint : productionLoginEndpoint;
+      // const res = await axios.post(loginEndpoint, { token });
+      const res = await axiosInstance.post("/auth/google-auth", { token });
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
       localStorage.setItem("userId", res.data.userId);

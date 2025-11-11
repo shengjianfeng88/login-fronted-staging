@@ -168,6 +168,14 @@ const Subscription: React.FC = () => {
     );
   };
 
+  // Helper function to check if user has premium access (for cancelled subscriptions)
+  const hasPremiumAccess = () => {
+    return (
+      !isQuotaLoading &&
+      quotaData?.userType === "premium"
+    );
+  };
+
   // Helper function to format currency
   const formatCurrency = (amount: number, currency: string) => {
     const formatter = new Intl.NumberFormat("en-US", {
@@ -428,6 +436,7 @@ const Subscription: React.FC = () => {
                   daysUntilRenewal={calculateDaysUntilRenewal()}
                   freeTryOnQuota={quotaData?.freeTryOnQuota ?? 0}
                   credits={quotaData?.credits ?? 0}
+                  hasPremiumAccess={hasPremiumAccess()}
                 />
 
 
