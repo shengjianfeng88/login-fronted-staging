@@ -16,12 +16,10 @@ const FreePlanCard: React.FC<FreePlanCardProps> = ({ hasPlusPlan, onDowngrade })
             <hr className="my-6" />
             <p className="text-sm font-medium text-gray-600 mb-6">Always free</p>
             <div className="space-y-4 flex-grow mb-8">
-                <PlanFeature included={true} text="50 credits / month" />
-                <PlanFeature included={true} text="~10 try-ons (5 credits each)" />
-                <PlanFeature included={true} text="~50 size recs (1 credit each)" />
+                <PlanFeature included={true} text="10 try-ons / month" />
                 <PlanFeature included={true} text="Limited History (last 5 items)" />
                 <PlanFeature included={true} text="Basic Prompts" />
-                <PlanFeature included={false} text="Ads shown" />
+                <PlanFeature included={false} text="Ads Shown" />
             </div>
             {!hasPlusPlan ? (
                 <button className="w-full bg-gray-200 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">

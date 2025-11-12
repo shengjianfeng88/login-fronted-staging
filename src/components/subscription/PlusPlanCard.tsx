@@ -45,10 +45,10 @@ const PlusPlanCard: React.FC<PlusPlanCardProps> = ({
             </p>
 
             <div className="space-y-4 flex-grow mb-8">
-                <PlanFeature included={true} text="150 credits/mo + top-ups available" />
-                <PlanFeature included={true} text="No queue" />
+                <PlanFeature included={true} text="150 credits / month" />
+                <PlanFeature included={true} text="No Queue" />
                 <PlanFeature included={true} text="Full History Access" />
-                <PlanFeature included={true} text="Custom background prompts" />
+                <PlanFeature included={true} text="Custom Background Prompts" />
                 <PlanFeature included={true} text="Ad Free" />
             </div>
             {hasPlusPlan ? (

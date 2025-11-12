@@ -60,6 +60,9 @@ const Subscription: React.FC = () => {
       freeTryOnQuota: number;
       lastQuotaReset?: string;
       nextResetTime?: string;
+      monthlyUsage?: number;
+      monthlyLimit?: number;
+      monthlyRemaining?: number;
       credits: number;
     }
     | null
@@ -127,6 +130,9 @@ const Subscription: React.FC = () => {
           freeTryOnQuota: quota?.freeTryOnQuota ?? 0,
           lastQuotaReset: quota?.lastQuotaReset,
           nextResetTime: quota?.nextResetTime,
+          monthlyUsage: quota?.monthlyUsage,
+          monthlyLimit: quota?.monthlyLimit,
+          monthlyRemaining: quota?.monthlyRemaining,
           credits: typeof credits === "number" ? credits : 0,
         });
       })
@@ -437,6 +443,9 @@ const Subscription: React.FC = () => {
                   freeTryOnQuota={quotaData?.freeTryOnQuota ?? 0}
                   credits={quotaData?.credits ?? 0}
                   hasPremiumAccess={hasPremiumAccess()}
+                  monthlyUsage={quotaData?.monthlyUsage ?? 0}
+                  monthlyLimit={quotaData?.monthlyLimit ?? 0}
+                  monthlyRemaining={quotaData?.monthlyRemaining ?? 0}
                 />
 
 
