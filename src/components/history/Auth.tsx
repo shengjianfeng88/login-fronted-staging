@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { FaUserCircle } from 'react-icons/fa';
-import { IoMdNotifications } from 'react-icons/io';
 import { IoLogOutOutline } from 'react-icons/io5';
 import { AiOutlineHeart } from 'react-icons/ai';
 import { RiMenuFill } from 'react-icons/ri';
@@ -82,6 +81,12 @@ const Auth = () => {
     <div className='flex justify-center items-center gap-5'>
       {user?.email ? (
         <>
+          <Link
+            className='px-3 py-1.5 rounded-full bg-brand-primary hover:opacity-90 text-white font-normal text-xs duration-300 transition-all shadow-md'
+            to='/subscription'
+          >
+            Upgrade
+          </Link>
           <div
             className='relative z-50'
             ref={menuRef}

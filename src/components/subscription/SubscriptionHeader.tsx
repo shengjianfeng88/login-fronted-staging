@@ -3,7 +3,6 @@ import { Crown } from "lucide-react";
 
 type SubscriptionHeaderProps = {
     hasPlusPlan: boolean;
-    showCancelledBadge: boolean;
     billingLabel?: string;
     amountCents?: number;
     currency?: string;
@@ -12,7 +11,6 @@ type SubscriptionHeaderProps = {
 
 const SubscriptionHeader: React.FC<SubscriptionHeaderProps> = ({
     hasPlusPlan,
-    showCancelledBadge,
     billingLabel,
     amountCents,
     currency,
@@ -31,19 +29,9 @@ const SubscriptionHeader: React.FC<SubscriptionHeaderProps> = ({
                         {hasPlusPlan ? "Plus Plan" : "Free Plan"}
                     </h1>
                     <div className="flex items-center gap-2 mt-1">
-                        {hasPlusPlan ? (
-                            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">
-                                Active
-                            </span>
-                        ) : showCancelledBadge ? (
-                            <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold">
-                                Cancelled
-                            </span>
-                        ) : (
-                            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">
-                                Active
-                            </span>
-                        )}
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">
+                            Active
+                        </span>
                         {hasPlusPlan ? (
                             <span className="text-gray-500 text-sm">{billingLabel}</span>
                         ) : (

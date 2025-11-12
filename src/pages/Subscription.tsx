@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { message } from "antd";
 import AccountSidebar from "../components/AccountSidebar";
@@ -21,7 +20,6 @@ const Subscription: React.FC = () => {
   // Cancel subscription state
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [subscriptionCancelled, setSubscriptionCancelled] = useState(false);
 
   // Billing cycle selection for checkout
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
@@ -37,13 +35,24 @@ const Subscription: React.FC = () => {
       stripe_session_id: string;
       stripe_payment_id: string | null;
       amount: number;
+      credits_amount: number;
       currency: string;
       status: string;
       plan_type: string;
-      credits_amount: number;
       created_at: string;
       updated_at: string;
+      current_period_end: string;
     } | null;
+    quota?: {
+      userType: string;
+      freeTryOnQuota: number;
+      lastQuotaReset?: string;
+      nextResetTime?: string;
+      monthlyUsage?: number;
+      monthlyLimit?: number;
+      monthlyRemaining?: number;
+    };
+    credits?: number;
   }>({
     has_subscription: false,
     subscription: null,
@@ -67,7 +76,6 @@ const Subscription: React.FC = () => {
     }
     | null
   >(null);
-  const [isQuotaLoading, setIsQuotaLoading] = useState(true);
 
   // Plans data for dynamic pricing/details
   type PlanInfo = {
@@ -83,18 +91,17 @@ const Subscription: React.FC = () => {
   const [plans, setPlans] = useState<Record<string, PlanInfo>>({});
   const [isPlansLoading, setIsPlansLoading] = useState(true);
 
-  // Fetch subscription status and credits quota on component mount
+  // Fetch subscription status on component mount
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       console.error("No authentication token found");
       setSubscriptionError("No authentication token found");
       setIsSubscriptionLoading(false);
-      setIsQuotaLoading(false);
       return;
     }
 
-    // Fetch subscription status
+    // Fetch subscription status from /status endpoint
     axiosInstance
       .get(getApiUrl("SUBSCRIPTION_API", "/api/subscription/status"), {
         headers: {
@@ -115,7 +122,7 @@ const Subscription: React.FC = () => {
         setIsSubscriptionLoading(false);
       });
 
-    // Fetch credits quota (freeTryOnQuota + credits)
+    // Fetch quota data from /quota endpoint
     axiosInstance
       .get(getApiUrl("AUTH_API", "/auth/credits/quota"), {
         headers: {
@@ -124,7 +131,10 @@ const Subscription: React.FC = () => {
         },
       })
       .then((response) => {
-        const { quota, credits } = response.data || {};
+        const quotaResponse = response.data;
+        const quota = quotaResponse?.quota || {};
+        const credits = quotaResponse?.credits ?? 0;
+        
         setQuotaData({
           userType: quota?.userType || "free",
           freeTryOnQuota: quota?.freeTryOnQuota ?? 0,
@@ -137,10 +147,13 @@ const Subscription: React.FC = () => {
         });
       })
       .catch((error: unknown) => {
-        console.error("Quota fetch error:", error);
-      })
-      .finally(() => {
-        setIsQuotaLoading(false);
+        console.error("Quota data error:", error);
+        // Set default quota data on error
+        setQuotaData({
+          userType: "free",
+          freeTryOnQuota: 0,
+          credits: 0,
+        });
       });
 
     // Fetch available subscription plans (no auth required)
@@ -165,20 +178,12 @@ const Subscription: React.FC = () => {
       });
   }, [navigate]);
 
-  // Helper function to check if user has plus plan
-  const hasPlusPlan = () => {
-    return (
+  // Helper function to check if user has premium access
+  const hasPremiumAccess = () => {
+    return Boolean(
       !isSubscriptionLoading &&
       !subscriptionError &&
       subscriptionData.has_subscription
-    );
-  };
-
-  // Helper function to check if user has premium access (for cancelled subscriptions)
-  const hasPremiumAccess = () => {
-    return (
-      !isQuotaLoading &&
-      quotaData?.userType === "premium"
     );
   };
 
@@ -195,14 +200,18 @@ const Subscription: React.FC = () => {
   const calculateDaysUntilRenewal = () => {
     if (!subscriptionData.subscription) return null;
 
-    // For monthly subscription, calculate based on the created_at date
-    // Stripe typically uses a 30-day billing cycle for monthly subscriptions
-    // The server time appears to be in UTC format (e.g., 2025-10-18T23:27:13.681000)
-    const createdAt = new Date(subscriptionData.subscription.created_at);
+    let renewalDate: Date;
 
-    // Add exactly 30 days for the renewal date (standard Stripe monthly cycle)
-    const renewalDate = new Date(createdAt);
-    renewalDate.setDate(renewalDate.getDate() + 30);
+    // 如果存在 current_period_end 字段（通常是 cancelled 状态），使用该字段
+    if (subscriptionData.subscription.current_period_end) {
+      renewalDate = new Date(subscriptionData.subscription.current_period_end);
+    } else {
+      // 如果不存在 current_period_end 字段（通常是 succeeded 状态），
+      // 基于 created_at 字段计算：添加30天作为标准月度订阅周期
+      const createdAt = new Date(subscriptionData.subscription.created_at);
+      renewalDate = new Date(createdAt);
+      renewalDate.setDate(renewalDate.getDate() + 30);
+    }
 
     // Get current time in UTC to match server time
     const now = new Date();
@@ -213,8 +222,6 @@ const Subscription: React.FC = () => {
 
     return diffDays > 0 ? diffDays : 0;
   };
-
-  // Daily free credits = freeTryOnQuota * 5 (computed in StatsCards)
 
   // Derived helpers for selected plan display
   const selectedPlanId = billingCycle === "monthly" ? "plus_monthly" : "plus_annual";
@@ -296,29 +303,13 @@ const Subscription: React.FC = () => {
       );
 
       if (response.data.success) {
-        // Update subscription state locally
-        const prevSubscription = subscriptionData.subscription;
-        setSubscriptionData({
-          has_subscription: false,
-          subscription: null,
-        });
-
         setShowCancelConfirm(false);
-        setSubscriptionCancelled(true);
         message.success(
           "Your subscription has been cancelled and will not renew. You'll continue to have access to Plus features until the end of your current billing period."
         );
-
-        // Store previous subscription data for display purposes
-        if (prevSubscription) {
-          setSubscriptionData({
-            has_subscription: false,
-            subscription: {
-              ...prevSubscription,
-              status: "cancelled",
-            },
-          });
-        }
+        
+        // 简化处理：直接刷新页面以获取最新状态
+        window.location.reload();
       } else {
         message.error(response.data.error || "Failed to cancel subscription");
       }
@@ -344,12 +335,7 @@ const Subscription: React.FC = () => {
     }
   };
 
-  const showCancelledBadge =
-    !hasPlusPlan() &&
-    subscriptionCancelled &&
-    subscriptionData.subscription?.status === "cancelled";
-
-  const billingLabel = hasPlusPlan()
+  const billingLabel = hasPremiumAccess()
     ? subscriptionData.subscription?.plan_type === "monthly"
       ? "monthly billing"
       : subscriptionData.subscription?.plan_type === "yearly"
@@ -400,35 +386,9 @@ const Subscription: React.FC = () => {
               </div>
             ) : (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-                {/* Cancellation Notice */}
-                {subscriptionCancelled && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <AlertTriangle
-                          className="h-5 w-5 text-amber-400"
-                        />
-                      </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-amber-800">
-                          Subscription Cancelled
-                        </h3>
-                        <div className="mt-2 text-sm text-amber-700">
-                          <p>
-                            Your subscription has been cancelled. You'll
-                            continue to have access to Plus features until the
-                            end of your current billing period.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {/* Header Section */}
                 <SubscriptionHeader
-                  hasPlusPlan={hasPlusPlan()}
-                  showCancelledBadge={showCancelledBadge}
+                  hasPlusPlan={hasPremiumAccess()}
                   billingLabel={billingLabel}
                   amountCents={subscriptionData.subscription?.amount}
                   currency={subscriptionData.subscription?.currency || "usd"}
@@ -437,12 +397,10 @@ const Subscription: React.FC = () => {
 
                 {/* Stats Section */}
                 <StatsCards
-                  isQuotaLoading={isQuotaLoading}
-                  hasPlusPlan={hasPlusPlan()}
+                  hasPremiumAccess={hasPremiumAccess()}
                   daysUntilRenewal={calculateDaysUntilRenewal()}
                   freeTryOnQuota={quotaData?.freeTryOnQuota ?? 0}
                   credits={quotaData?.credits ?? 0}
-                  hasPremiumAccess={hasPremiumAccess()}
                   monthlyUsage={quotaData?.monthlyUsage ?? 0}
                   monthlyLimit={quotaData?.monthlyLimit ?? 0}
                   monthlyRemaining={quotaData?.monthlyRemaining ?? 0}
@@ -466,7 +424,7 @@ const Subscription: React.FC = () => {
 
               <div className="flex flex-col lg:flex-row items-stretch justify-center gap-8 w-full">
                 <FreePlanCard
-                  hasPlusPlan={hasPlusPlan()}
+                  hasPlusPlan={hasPremiumAccess()}
                   onDowngrade={() => setShowCancelConfirm(true)}
                 />
                 <PlusPlanCard
@@ -476,7 +434,7 @@ const Subscription: React.FC = () => {
                   onBillingChange={setBillingCycle}
                   isPlansLoading={isPlansLoading}
                   description={selectedPlan?.description}
-                  hasPlusPlan={hasPlusPlan()}
+                  hasPlusPlan={hasPremiumAccess()}
                   onChoosePlan={() => handleChoosePlan(billingCycle)}
                   isLoading={isLoading}
                   isDisabled={isLoading || isSubscriptionLoading}
