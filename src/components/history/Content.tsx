@@ -7,90 +7,6 @@ import { tryonApi } from '../../api/tryon';
 import { getApiUrl } from '../../config/api';
 import { getAccessToken } from '../../utils/auth';
 
-const CURRENCY_ALIASES: Record<string, string> = {
-  usd: 'USD', '$': 'USD',
-  eur: 'EUR', '€': 'EUR',
-  gbp: 'GBP', '£': 'GBP', pound: 'GBP',
-  cad: 'CAD', aud: 'AUD', jpy: 'JPY', cny: 'CNY'
-};
-
-const normalizeCurrency = (c?: string) =>
-  (c ? (CURRENCY_ALIASES[c.trim().toLowerCase()] || c.toUpperCase()) : 'USD');
-
-const formatMoney = (value: number | string | undefined, currency?: string, locale?: string) => {
-  const code = normalizeCurrency(currency);
-  const loc = locale || (typeof navigator !== 'undefined' ? navigator.language : 'en-US');
-
-  if (value == null || value === '') return '';
-  const num = Number(value);
-  const fmt = new Intl.NumberFormat(loc, { style: 'currency', currency: code, currencyDisplay: 'symbol' });
-
-  if (!Number.isNaN(num)) return fmt.format(num);
-
-  // handle ranges like "43-54"
-  const m = String(value).match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
-  return m ? `${fmt.format(+m[1])}–${fmt.format(+m[2])}` : String(value);
-};
-
-
-const RECO_BASE = 'https://recommendation-system-dev.faishion.ai';
-const RECO_RECOMMEND = `${RECO_BASE}/recommend`;
-const RECO_HEALTH = `${RECO_BASE}/health`;
-
-const joinRecoImageUrl = (u?: string) =>
-  !u ? '' : u.startsWith('http') ? u : `${RECO_BASE}${u}`;
-
-const fetchRecsWithRetry = async (
-  imgUrl: string,
-  {
-    attempts = 2,
-    timeout = 0, // 60s; set to 0 for "no timeout"
-  }: { attempts?: number; timeout?: number } = {}
-) => {
-  let lastErr: any;
-  for (let i = 0; i < attempts; i++) {
-    try {
-      const res = await axios.post<Array<{
-        image_url: string;
-        score?: number;
-        product_id?: string;
-        name?: string;
-        price?: number | string;
-        currency?: string;
-        url?: string;
-        brand?: string;
-        original_price?: string | number;
-        category?: string;
-        subcategory?: string;
-        labels?: string[];
-        colors?: string[];
-        pattern?: string;
-        material?: string;
-        launch_date?: string;
-        expiration_date?: string;
-      }>>(
-        RECO_RECOMMEND,
-        { url: imgUrl },        
-        { timeout }
-      );
-      return res.data ?? [];
-    } catch (err: any) {
-      lastErr = err;
-      const status = err?.response?.status;
-      const isTimeout = err?.code === 'ECONNABORTED';
-      const retriable = isTimeout || status === 503 || (status >= 500 && status < 600);
-      if (!retriable || i === attempts - 1) throw err;
-      await new Promise(r => setTimeout(r, 1200 * (i + 1))); // simple backoff
-    }
-  }
-  throw lastErr;
-};
-
-const NO_SCROLLBAR_CSS = `
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-`;
-
 // Add DNS prefetch for image domain
 const addDnsPrefetch = () => {
   if (typeof document !== 'undefined') {
@@ -141,7 +57,6 @@ const getOptimizedImageUrl = (src: string, size: 'thumbnail' | 'medium' | 'large
 
   return optimizedUrl;
 };
-
 
 // Smart image preloading hook for modal carousel
 const useSmartImagePreloader = (images: string[], currentIndex: number) => {
@@ -418,14 +333,14 @@ const TryOnSubHeader: React.FC<{
       <div className="flex items-center gap-4">
         <button
           onClick={() => window.location.href = '/tryon-history/favorites'}
-          className="inline-flex items-center gap-2 h-7 px-6 rounded-md border border-gray-300 bg-white text-black font-semibold font-sans hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#675BC5]/30"
+          className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition"
         >
           <Heart className="w-4 h-4" />
           Favorites
         </button>
 
         <Menu as="div" className="relative inline-block text-left">
-          <Menu.Button className="inline-flex items-center gap-2 h-7 px-6 rounded-md border border-gray-300 bg-white text-black font-semibold font-sans hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#675BC5]/30">
+          <Menu.Button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
             Sort By
             <ChevronDown className="w-4 h-4" />
           </Menu.Button>
@@ -496,11 +411,11 @@ const ProductCard: React.FC<ProductProps> = ({
   isFavorite,
   onToggleFavorite,
   onDelete,
-  imageCount,
+  imageCount
 }) => (
-  <div className="relative bg-white overflow-hidden shadow-lg hover:shadow-xl transition cursor-pointer flex flex-col h-full rounded-2xl">
+  <div className="relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition cursor-pointer flex flex-col h-full">
     {/* Favorite Button */}
-    {/* <div
+    <div
       onClick={async (e) => {
         e.stopPropagation();
         await onToggleFavorite();
@@ -508,11 +423,10 @@ const ProductCard: React.FC<ProductProps> = ({
       className="absolute top-2 right-2 z-10 cursor-pointer p-1 rounded-full bg-white shadow hover:bg-gray-100"
     >
       <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
-    </div> */}
-  
+    </div>
 
     {/* Delete Button */}
-    {/* <div
+    <div
       onClick={(e) => {
         e.stopPropagation();
         onDelete();
@@ -520,22 +434,22 @@ const ProductCard: React.FC<ProductProps> = ({
       className="absolute bottom-2 right-2 z-10 cursor-pointer p-1 hover:bg-red-50 rounded transition-colors"
     >
       <Trash2 className="w-5 h-5 text-red-500 hover:text-red-600" />
-    </div> */}
+    </div>
 
     {/* Timestamp Badge */}
-    {/* <div className="absolute top-2 left-2 bg-gray-100 text-xs px-2 py-1 rounded z-10 text-gray-600">
+    <div className="absolute top-2 left-2 bg-gray-100 text-xs px-2 py-1 rounded z-10 text-gray-600">
       {new Date(timestamp).toLocaleDateString()}
-    </div> */}
+    </div>
 
     {/* Image Count Badge */}
-    {/* {imageCount > 1 && (
+    {imageCount > 1 && (
       <div className="absolute top-10 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded z-10 font-medium">
         {imageCount} try-ons
       </div>
-    )} */}
+    )}
 
     {/* Optimized Image */}
-    <div className="w-full h-72 bg-white flex items-center justify-center">
+    <div className="w-full h-72 bg-white flex items-center justify-center rounded-t-2xl">
       <OptimizedImage
         src={image}
         alt="Product"
@@ -545,28 +459,12 @@ const ProductCard: React.FC<ProductProps> = ({
 
     {/* Product Details */}
     <div className="p-4 flex flex-col justify-between flex-grow">
-  <div className="flex items-center justify-between mb-1">
-    <p className="text-gray-500 text-xs uppercase tracking-wide font-medium">
-      {brand}
-    </p>
-
-    {/* Favorite Button (moved + reused) */}
-    <div
-      onClick={async (e) => {
-        e.stopPropagation();
-        await onToggleFavorite();
-      }}
-      className="cursor-pointer p-1 rounded-full"
-    >
-      <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+      <p className="text-gray-500 text-xs uppercase tracking-wide font-medium mb-1">{brand}</p>
+      <p className="text-lg font-semibold text-gray-900 truncate">{name}</p>
+      <div className="flex items-center gap-2 mt-2">
+        <span className="text-lg font-bold text-black">{currency}{price}</span>
+      </div>
     </div>
-  </div>
-
-  <p className="text-lg font-semibold text-gray-900 truncate">{name}</p>
-  <div className="flex items-center gap-2 mt-2">
-    <span className="text-lg font-bold text-black">{currency}{price}</span>
-  </div>
-</div>
   </div>
 );
 
@@ -576,8 +474,7 @@ const ImageSlider: React.FC<{
   currentIndex: number;
   onIndexChange: (index: number) => void;
   onDeleteImage?: (imageIndex: number) => void;
-  useSharedPanel?: boolean;
-}> = ({ images, currentIndex, onIndexChange, onDeleteImage, useSharedPanel = false }) => {
+}> = ({ images, currentIndex, onIndexChange, onDeleteImage }) => {
   const [carouselLoading, setCarouselLoading] = useState(false);
   const [currentImageSrc, setCurrentImageSrc] = useState('');
 
@@ -590,13 +487,13 @@ const ImageSlider: React.FC<{
     }
   }, [currentIndex, images, currentImageSrc]);
 
-  // const goToPrevious = () => {
-  //   onIndexChange(currentIndex === 0 ? images.length - 1 : currentIndex - 1);
-  // };
+  const goToPrevious = () => {
+    onIndexChange(currentIndex === 0 ? images.length - 1 : currentIndex - 1);
+  };
 
-  // const goToNext = () => {
-  //   onIndexChange(currentIndex === images.length - 1 ? 0 : currentIndex + 1);
-  // };
+  const goToNext = () => {
+    onIndexChange(currentIndex === images.length - 1 ? 0 : currentIndex + 1);
+  };
 
   const handleLoadStart = () => {
     setCarouselLoading(true);
@@ -608,7 +505,7 @@ const ImageSlider: React.FC<{
 
   return (
     <div className="relative">
-      <div className={`w-full h-96 ${useSharedPanel ? '' : 'bg-gray-100'}flex items-center justify-center overflow-hidden relative`}>
+      <div className="w-full h-96 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden relative">
         {/* Carousel Loading Overlay */}
         {carouselLoading && (
           <div className="absolute inset-0 bg-gray-100 bg-opacity-90 flex items-center justify-center z-20 rounded-xl">
@@ -646,12 +543,58 @@ const ImageSlider: React.FC<{
         )}
       </div>
 
-     
+      {images.length > 1 && (
+        <>
+          {/* Navigation Arrows */}
+          <button
+            onClick={goToPrevious}
+            className={`absolute left-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition ${carouselLoading ? 'opacity-70' : ''}`}
+            disabled={false} // Keep buttons enabled during loading for better UX
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <button
+            onClick={goToNext}
+            className={`absolute right-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition ${carouselLoading ? 'opacity-70' : ''}`}
+            disabled={false} // Keep buttons enabled during loading for better UX
+          >
+            <ChevronRight className="w-5 h-5 text-gray-600" />
+          </button>
+
+          {/* Dots Indicator */}
+          <div className="flex justify-center mt-4 gap-2">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => onIndexChange(index)}
+                className={`w-2 h-2 rounded-full transition ${index === currentIndex
+                  ? carouselLoading
+                    ? 'bg-blue-400 animate-pulse'
+                    : 'bg-blue-500'
+                  : 'bg-gray-300'
+                  }`}
+              />
+            ))}
+          </div>
+
+          {/* Image Counter */}
+          <div className={`absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded transition ${carouselLoading ? 'opacity-70' : ''}`}>
+            {carouselLoading ? (
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+                {currentIndex + 1} / {images.length}
+              </span>
+            ) : (
+              <span>{currentIndex + 1} / {images.length}</span>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Timestamp for current image */}
-      {/* <p className="text-gray-500 font-semibold font-sans text-sm mt-2 text-center">
+      <p className="text-gray-500 text-sm mt-2 text-center">
         Try-on date: {new Date(images[currentIndex].timestamp).toLocaleDateString()}
-      </p> */}
+      </p>
     </div>
   );
 };
@@ -748,201 +691,6 @@ interface ContentProps {
   searchQuery: string;
 }
 
-
-type RecItem = {
-  image: string;
-  brand?: string;
-  name?: string;
-  price?: number | string;
-  currency?: string;
-  url?: string;
-};
-
-
-const MiniRecCard: React.FC<{ item: RecItem }> = ({ item }) => (
-  <a
-    href={item.url || '#'}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="
-      block flex-none w-[140px] h-[241px]
-  bg-white border border-gray-200 hover:shadow transition overflow-hidden
-    "
-  >
-  
-    <div className="w-full h-[172px] bg-gray-100 flex items-center justify-center">
-      <img
-        src={item.image}
-        alt={item.name || 'Recommended'}
-        className="max-h-full max-w-full object-contain"
-        loading="lazy"
-        decoding="async"
-      />
-    </div>
-
-    <div className="p-3 h-[88px] flex flex-col">
-      <p className="text-[8px] text-gray-600 font-semibold uppercase tracking-wide mb-0.5 line-clamp-1">
-        {item.brand || '—'}
-      </p>
-      <p className="text-[12px] font-sans text-gray-900 leading-tight line-clamp-1">
-        {item.name || 'Product'}
-      </p>
-      <div className="text-[10px] font-semibold">
-  {formatMoney(item.price, item.currency || 'USD')}
-</div>
-    </div>
-  </a>
-);
-
-
-const RecommendedCarousel: React.FC<{ items: RecItem[]; arrowColor?: string }> = ({ items }) => {
-  const scrollerRef = React.useRef<HTMLDivElement>(null);
-  const [atStart, setAtStart] = React.useState(true);
-  const [atEnd, setAtEnd] = React.useState(false);
-
-  const updateEnds = React.useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setAtStart(el.scrollLeft <= 2);
-    setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 2);
-  }, []);
-
-  React.useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    updateEnds();
-    el.addEventListener('scroll', updateEnds, { passive: true });
-    window.addEventListener('resize', updateEnds);
-    return () => {
-      el.removeEventListener('scroll', updateEnds);
-      window.removeEventListener('resize', updateEnds);
-    };
-  }, [updateEnds]);
-
-  const scrollByPage = (dir: 1 | -1) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: el.clientWidth * dir, behavior: 'smooth' });
-  };
-
-const ArrowBtn: React.FC<{ side: 'left' | 'right'; onClick: () => void; disabled?: boolean }> = ({ side, onClick, disabled }) => (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`
-        absolute ${side === 'left' ? 'left-1.5' : 'right-1.5'} top-1/2 -translate-y-1/2 z-10
-        rounded-full p-2 shadow-md transition
-        ${disabled ? 'bg-[#CBCDCF] cursor-not-allowed' : 'bg-black hover:shadow-lg'}
-      `}
-      aria-label={side === 'left' ? 'Previous' : 'Next'}
-    >
-      {side === 'left' ? <ChevronLeft className={`w-4 h-4 ${disabled ? 'text-[#758094]' : 'text-white'}`} /> : <ChevronRight className={`w-4 h-4 ${disabled ? 'text-[#758094]' : 'text-white'}`} />}
-    </button>
-  );
-
-  return (
-      <div className="mt-6 w-[140px] sm:w-[292px] md:w-[444px]">
-      <h3 className="text-[16px] font-semibold text-gray-800 mb-2">You May Also Like</h3>
-
-      <div className="relative">
-        <div
-          ref={scrollerRef}
-          className="
-            flex gap-3 overflow-x-auto scroll-smooth
-      snap-x snap-mandatory px-0 pb-1
-      [-ms-overflow-style:none] [scrollbar-width:none]
-          "
-        >
-          {items.map((it, i) => (
-            <div key={i} className="snap-start">
-              <MiniRecCard item={it} />
-            </div>
-          ))}
-        </div>
-
-    
-<div
-  className="pointer-events-none absolute inset-x-0"
-  style={{ top: 0, height: 172 }}
->
-  <div className="relative h-full">
-    <div className="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-auto">
-      <ArrowBtn side="left" onClick={() => scrollByPage(-1)} disabled={atStart} />
-    </div>
-    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-auto">
-      <ArrowBtn side="right" onClick={() => scrollByPage(1)} disabled={atEnd} />
-    </div>
-  </div>
-</div>
-
-      </div>
-
-      {/* Hide WebKit scrollbar */}
-      <style>{`.hide-scrollbar::-webkit-scrollbar{display:none}`}</style>
-    </div>
-  );
-};
-
-const ThumbnailRail: React.FC<{
-  images: { url: string; timestamp: string; imageIndex: number; recordId?: string }[];
-  currentIndex: number;
-  onIndexChange: (i: number) => void;
-}> = ({ images, currentIndex, onIndexChange }) => {
-  const refs = React.useRef<(HTMLButtonElement | null)[]>([]);
-
-  // Auto-keep the active thumb in view
-  useEffect(() => {
-    const el = refs.current[currentIndex];
-    if (el) el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-  }, [currentIndex]);
-
-  return (
-    <div className="flex flex-col items-center">
-      
-    <div
-      className="
-        no-scrollbar overflow-y-auto
-        h-96
-        w-[49px] sm:w-[56px] md:w-[64px]
-        
-      "
-      style={{ scrollBehavior: 'smooth' }}
-    >
-      <div className="flex flex-col gap-2 p-1">
-        {images.map((img, i) => (
-          <button
-  key={`${img.url}-${i}`}
-  ref={(el) => (refs.current[i] = el)}
-  onClick={(e) => { e.stopPropagation(); onIndexChange(i); }}
-  title={new Date(img.timestamp).toLocaleDateString()}
-  className={`
-    relative shrink-0
-    w-[49px] md:w-[60px]          
-    aspect-[49/65]                
-    box-border                    
-    ${i === currentIndex
-      ? 'border-[3px] border-[#675BC5]'
-      : 'border border-gray-300 hover:border-gray-400'}
-     overflow-hidden bg-white p-0
-    flex items-center justify-center transition
-  `}
->
-  <img
-    src={img.url}
-    alt={`Try-on ${i + 1}`}
-    loading="lazy"
-    decoding="async"
-    className="w-full h-full object-contain"
-  />
-</button>
-        ))}
-      </div>
-    </div>
-  </div>
-);
-};
-
-
 const Content: React.FC<ContentProps> = ({ searchQuery }) => {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -970,83 +718,11 @@ const Content: React.FC<ContentProps> = ({ searchQuery }) => {
     isDeleting: false
   });
 
-  // ── Recommendations state ───────────────────────────────────────────────────────
-const [recItems, setRecItems] = useState<RecItem[]>([]);
-const [recLoading, setRecLoading] = useState(false);
-const [recError, setRecError] = useState<string | null>(null);
-// cache per source image URL to avoid re-fetch
-const recCacheRef = useRef<Map<string, RecItem[]>>(new Map());
-
   const hasFetchedInitialData = useRef(false);
 
   // Smart preload modal images based on current index
   const modalImages = selectedProduct?.images.map(img => img.url) || [];
-  useSmartImagePreloader(modalImages, currentImageIndex);
-
-
-useEffect(() => {
-  if (!showModal || !selectedProduct) return;
-
-  const productKey = selectedProduct.productUrl;
-  const cached = recCacheRef.current.get(productKey);
-  if (cached) {
-    setRecItems(cached);
-    setRecError(null);
-    setRecLoading(false);
-    return;
-  }
-
-  const representativeImgUrl = selectedProduct.images?.[0]?.url;
-  if (!representativeImgUrl) return;
-
-  let cancelled = false;
-
-  const fetchRecs = async () => {
-  try {
-    setRecLoading(true);
-    setRecError(null);
-
-    
-    const slowTimer = window.setTimeout(() => {
-      if (!cancelled) setRecError('Still generating recommendations…');
-    }, 15000);
-
-    const data = await fetchRecsWithRetry(representativeImgUrl, {
-      attempts: 2,
-      timeout: 0,
-    });
-
-    window.clearTimeout(slowTimer);
-    setRecError(null); 
-
-    const mapped: RecItem[] = (data || []).map(r => ({
-      image: joinRecoImageUrl(r.image_url),
-      name: r.name,
-      price: r.price ?? r.original_price,
-      currency: r.currency,
-      url: r.url,
-      brand: r?.brand,
-    }));
-
-    if (!cancelled) {
-      recCacheRef.current.set(productKey, mapped);
-      setRecItems(mapped);
-    }
-  } catch (err) {
-    if (!cancelled) setRecError('Failed to load recommendations.');
-  } finally {
-    if (!cancelled) setRecLoading(false);
-  }
-};
-
-fetchRecs();
-return () => { cancelled = true; };
-}, [
-  showModal,
-  selectedProduct?.productUrl,
-]);
-
-
+  useSmartImagePreloader(modalImages, currentImageIndex); // Remove unused variable
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -1542,9 +1218,6 @@ return () => { cancelled = true; };
     return 0;
   });
 
-  const base = sortedProducts;
-
-
   return (
     <section className="px-10 py-6 min-h-[calc(100vh-150px)] bg-gray-50 mx-auto rounded-md flex flex-col items-center gap-6">
       <div className="max-w-[1280px] w-full">
@@ -1559,7 +1232,7 @@ return () => { cancelled = true; };
               onSortChange={setSortOrder}
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full">
-              {base.map((item) => (
+              {sortedProducts.map(item => (
                 <div
                   key={item.productUrl || 'unknown'}
                   onClick={() => {
@@ -1580,13 +1253,13 @@ return () => { cancelled = true; };
                     onToggleFavorite={() => toggleFavorite(item.productUrl || '')}
                     onDelete={() => handleDeleteClick(item)}
                     imageCount={item.totalTryOns || item.images.length}
-                   
                   />
                 </div>
               ))}
             </div>
           </>
         )}
+        {/* Loading indicator for infinite scroll */}
         {loading && products.length > 0 && (
           <div className="flex justify-center items-center mt-8 py-4">
             <div className="flex items-center gap-3">
@@ -1621,7 +1294,7 @@ return () => { cancelled = true; };
 
       {showModal && selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-8 max-w-5xl w-full flex gap-8 relative shadow-xl">
+          <div className="bg-white rounded-2xl p-8 max-w-5xl w-full flex gap-8 relative shadow-xl">
             <button
               className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
               onClick={() => setShowModal(false)}
@@ -1629,45 +1302,25 @@ return () => { cancelled = true; };
               <X className="w-6 h-6" />
             </button>
             <div className="w-1/2">
-  
-  <style dangerouslySetInnerHTML={{ __html: NO_SCROLLBAR_CSS }} />
-  <div className="bg-gray-100 px-3 py-0">
-  <div className="flex items-stretch gap-3">
-    
-    <ThumbnailRail
-      images={selectedProduct.images}
-      currentIndex={currentImageIndex}
-      onIndexChange={setCurrentImageIndex}
-    />
-
-    <div className="flex-1">
-      <ImageSlider
-        images={selectedProduct.images}
-        currentIndex={currentImageIndex}
-        onIndexChange={setCurrentImageIndex}
-        onDeleteImage={handleDeleteImage}
-        useSharedPanel={true}      
-      />
-    </div>
-  </div>
-</div>
-<div className="text-center text-sm text-gray-600 mt-4">
-  Try-on date: {new Date(selectedProduct.images[currentImageIndex].timestamp).toLocaleDateString()}
-</div>
-</div>
-
-            <div className="w-1/2 flex flex-col justify-center gap-3">
-              <h2 className="text-[20px] font-bold text-gray-900">
+              <ImageSlider
+                images={selectedProduct.images}
+                currentIndex={currentImageIndex}
+                onIndexChange={setCurrentImageIndex}
+                onDeleteImage={handleDeleteImage}
+              />
+            </div>
+            <div className="w-1/2 flex flex-col justify-center gap-4">
+              <h2 className="text-2xl font-bold text-gray-900">
                 {selectedProduct.productInfo?.brand_name || 'Brand'} -{' '}
                 {selectedProduct.productInfo?.product_name || selectedProduct.productInfo?.name || 'Product Name'}
               </h2>
-              <div className="flex items-center gap-1">
-                <span className="text-[14px] font-bold text-black">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-bold text-black">
                   {selectedProduct.productInfo?.currency}{selectedProduct.productInfo?.price}
                 </span>
               </div>
               {selectedProduct.images.length > 1 && (
-                <p className="text-[#675BC5] text-sm font-medium">
+                <p className="text-blue-600 text-sm font-medium">
                   {selectedProduct.totalTryOns} try-ons available
                 </p>
               )}
@@ -1675,22 +1328,10 @@ return () => { cancelled = true; };
                 href={selectedProduct.productUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 bg-[#675BC5] text-white px-9 py-2 text-[14px] rounded-lg hover:bg-gray-800 text-center w-fit"
+                className="mt-3 bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 text-center w-fit"
               >
                 Shop Now
               </a>
-              {recLoading && (
-  <div className="mt-6">
-    <div className="w-6 h-6 border-2 border-[#6C5DD3] border-t-transparent rounded-full animate-spin"/>Loading Recommendations for You
-      
-  </div>
-)}
-{recError && (
-  <p className="text-sm text-red-500 mt-2">{recError}</p>
-)}
-{!recLoading && !recError && recItems.length > 0 && (
-  <RecommendedCarousel items={recItems} arrowColor="#675BC5" />
-)}
             </div>
           </div>
         </div>
