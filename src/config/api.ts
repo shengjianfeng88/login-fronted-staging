@@ -25,7 +25,7 @@ export const API_DOMAINS = {
   // 历史记录API（包含收藏功能）
   HISTORY_API: isDevelopment
     ? "" // 开发环境使用vite proxy (已配置 /history)
-    : "https://tryon-history.faishion.ai", // 生产环境使用实际域名
+    : "https://tryon-history-staging.faishion.ai", // 生产环境使用实际域名
 
   // 订阅服务API
   SUBSCRIPTION_API: "https://subscriptions.faishion.ai",
