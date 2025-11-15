@@ -608,7 +608,11 @@ const ImageSlider: React.FC<{
 
   return (
     <div className="relative">
-      <div className={`w-full h-96 ${useSharedPanel ? '' : 'bg-gray-100'}flex items-center justify-center overflow-hidden relative`}>
+      <div
+  className={`w-full h-96 flex items-center justify-center overflow-hidden relative ${
+    useSharedPanel ? 'px-2' : 'bg-gray-100'
+  }`}
+>
         {/* Carousel Loading Overlay */}
         {carouselLoading && (
           <div className="absolute inset-0 bg-gray-100 bg-opacity-90 flex items-center justify-center z-20 rounded-xl">
@@ -639,7 +643,7 @@ const ImageSlider: React.FC<{
               e.stopPropagation();
               onDeleteImage(images[currentIndex].imageIndex);
             }}
-            className="absolute bottom-4 right-4 z-10 cursor-pointer p-2 hover:bg-red-50 rounded-full bg-white shadow-lg hover:shadow-xl transition-all"
+            className="absolute bottom-4 right-0 z-10 cursor-pointer p-2 hover:bg-red-50 rounded-full bg-white shadow-lg hover:shadow-xl transition-all"
           >
             <Trash2 className="w-5 h-5 text-red-500 hover:text-red-600" />
           </div>
