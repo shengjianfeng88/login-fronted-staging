@@ -14,7 +14,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { sendMessageToExtension } from "@/utils/utils";
 import { setUser } from "@/store/features/userSlice";
-import backgroundImage from "@/assets/Background.png";
+import signupVideo from "@/assets/onboarding/sora try on.mp4";
 import image1 from "@/assets/image_1.jpg";
 import image2 from "@/assets/image_2.jpg";
 import image3 from "@/assets/image_3.jpg";
@@ -152,6 +152,7 @@ const SignUp = () => {
 
       await axiosInstance.post("/auth/request-register", requestData);
       alert("Verification email sent! Check your inbox.");
+      navigate("/onboarding");
     } catch (_error) {
       console.error("Registration failed:", _error);
       setError("Registration failed");
@@ -264,13 +265,17 @@ const SignUp = () => {
     onError: handleError,
   });
 
+
+
+
   return (
-    <main className="min-h-screen">
-      <div className="flex flex-col md:flex-row h-screen">
+    <main className="min-h-screen flex items-center justify-center px-4">
+      
+      <div className="flex w-full max-w-[1177px] flex-col md:flex-row items-stretch gap-8 lg:gap-[137px]">
         {/* Left side (for the form) */}
-        <div className="w-full md:w-[40%] lg:w-[35%] overflow-auto relative">
+        <div className="w-full md:max-w-[520px] bg-white rounded-[24px] border-[2px] border-[#D9D9D9] overflow-hidden">
           {/* Logo area */}
-          <Link
+          {/* <Link
             to="https://www.faishion.ai/"
             className="flex items-center absolute top-8 left-8"
           >
@@ -278,21 +283,19 @@ const SignUp = () => {
             <span className="ml-3 font-bold text-xl text-gray-800">
               fAIshion.AI
             </span>
-          </Link>
+          </Link> */}
 
-          <div className="p-4 md:p-6 lg:p-8 flex flex-col w-full h-full justify-center pt-16">
+          <div className="p-6 md:p-8 lg:p-10 flex flex-col w-full h-full justify-center">
             {/* Form content */}
             <div className="w-full max-w-[90%] mx-auto">
               {/* Welcome text */}
               <div className="mb-5">
                 <h1 className="font-semibold text-2xl md:text-3xl text-[#2F2F2F]">
-                  Sign Up
+                  Welcome
                 </h1>
                 <div className="w-full">
-                  <p className="font-normal text-xs text-[#A6A6A6] mt-1">
-                    By signing up, you agree to Final Round's Terms of Service
-                    and Privacy Policy. Your privacy is our top priority. Learn
-                    more about the steps we take to protect it.
+                  <p className="mt-1 text-[14px] leading-[22px] tracking-[-0.02em] font-normal text-[#000000]">
+                    Sign up to explore your virtual try-on experience. 
                   </p>
                 </div>
               </div>
@@ -304,13 +307,18 @@ const SignUp = () => {
               <form onSubmit={handleSubmit} className="w-full">
                 {/* Email input */}
                 <div className="mb-3">
+                  <label className="mb-2 block text-sm font-medium text-[#111111]">
+      Email
+    </label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="Email"
-                    className={`w-full h-10 border rounded-lg px-4 text-sm ${emailError || errors.email
+                    placeholder="Enter Email"
+                    className={`w-full max-w-[404px] h-8 border border-[#D9D9D9] rounded-[10px] px-2.5 
+                  text-[10px] font-medium 
+                  placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9] ${emailError || errors.email
                       ? "border-red-500"
                       : "border-[#DADCE0]"
                       }`}
@@ -325,13 +333,18 @@ const SignUp = () => {
 
                 {/* Password input */}
                 <div className="mb-3">
+                  <label className="mb-2 block text-sm font-medium text-[#111111]">
+      Password
+    </label>
                   <input
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="Password"
-                    className="w-full h-10 border border-[#DADCE0] rounded-lg px-4 text-sm"
+                    placeholder="Enter Password"
+                    className="w-full max-w-[404px] h-8 border border-[#D9D9D9] rounded-[10px] px-2.5
+                 text-[10px] font-medium
+                 placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9]"
                     autoComplete="new-password"
                   />
                   {formData.password && (
@@ -362,13 +375,18 @@ const SignUp = () => {
 
                 {/* Confirm Password input */}
                 <div className="mb-4">
+                  <label className="mb-2 block text-sm font-medium text-[#111111]">
+      Confirm Password
+    </label>
                   <input
                     type="password"
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    placeholder="Confirm Password"
-                    className="w-full h-10 border border-[#DADCE0] rounded-lg px-4 text-sm"
+                    placeholder="Enter Confirm Password"
+                    className="w-full max-w-[404px] h-8 border border-[#D9D9D9] rounded-[10px] px-2.5
+                 text-[10px] font-medium
+                 placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9]"
                     autoComplete="new-password"
                   />
                   {errors.confirmPassword && (
@@ -382,9 +400,9 @@ const SignUp = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-10 bg-[#2F2F2F] rounded-lg text-white font-bold text-sm flex items-center justify-center"
+                  className="w-full h-10 bg-[#2F2F2F] rounded-[10px] text-white font-bold text-sm flex items-center justify-center"
                 >
-                  {isLoading ? "Signing up..." : "SIGN UP"}
+                  {isLoading ? "Creating Account..." : "Create Account"}
                 </button>
               </form>
 
@@ -401,7 +419,7 @@ const SignUp = () => {
               <div className="mb-4 w-full">
                 <button
                   onClick={() => login()}
-                  className="w-full h-10 bg-white border border-[#DADCE0] rounded-lg text-sm font-medium flex items-center justify-center gap-2 text-[#2F2F2F] hover:bg-gray-100"
+                  className="w-full h-10 bg-white border border-[#DADCE0] rounded-[10px] text-sm font-medium flex items-center justify-center gap-2 text-[#2F2F2F] hover:bg-gray-100"
                 >
                   <img src={googleLogo} alt="Google" className="w-5 h-5" />
                   <span>Sign up with Google</span>
@@ -412,8 +430,8 @@ const SignUp = () => {
               <div className="w-full flex justify-center">
                 <p className="text-xs text-[#A6A6A6]">
                   Already have an account?{" "}
-                  <Link to="/signin" className="font-bold text-[#2F2F2F]">
-                    LOGIN
+                  <Link to="/signin" className="font-bold text-[#2F2F2F] text-decoration-line: underline">
+                    Log in
                   </Link>
                 </p>
               </div>
@@ -422,100 +440,21 @@ const SignUp = () => {
         </div>
 
         {/* Right side (for the picture and other stuff) */}
-        <div
-          className="hidden md:block md:w-[60%] lg:w-[65%] relative"
-          style={{
-            backgroundImage: `url(${backgroundImage})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
-          {/* Carousel container */}
-          <div className="absolute top-[42%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-[90%] md:max-w-[95%] lg:max-w-[90%]">
-            <div
-              ref={carouselRef}
-              className="flex items-center justify-center scale-[0.65] md:scale-[0.8] lg:scale-95"
-              onMouseEnter={() => setIsPaused(true)}
-              onMouseLeave={() => setIsPaused(false)}
-            >
-              {/* Left blurred image */}
-              <div className="relative -mr-2 xs:-mr-3 sm:-mr-4 md:-mr-12 lg:-mr-24 z-0">
-                <div className="w-24 xs:w-28 sm:w-36 md:w-52 lg:w-72 h-44 xs:h-56 sm:h-64 md:h-80 lg:h-[28rem] rounded-3xl overflow-hidden opacity-60 blur-[3px]">
-                  <img
-                    src={images[activeSlide].left}
-                    alt="Fashion model left"
-                    className={`w-full h-full object-cover transition-opacity duration-200 ease-in-out ${isTransitioning ? "opacity-60" : "opacity-100"
-                      }`}
-                  />
-                </div>
-              </div>
-
-              {/* Center focused image */}
-              <div className="relative z-10 transition-all duration-300 hover:scale-105">
-                <div className="w-44 xs:w-52 sm:w-64 md:w-80 lg:w-[30rem] h-64 xs:h-72 sm:h-96 md:h-[28rem] lg:h-[36rem] rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-2xl">
-                  <img
-                    src={images[activeSlide].center}
-                    className={`w-full h-full object-cover object-center transition-opacity duration-300 ease-in-out 
-                    ${isTransitioning ? "opacity-70" : "opacity-100"}`}
-                    alt="Fashion model center"
-                  />
-                </div>
-              </div>
-
-              {/* Right blurred image */}
-              <div className="relative -ml-2 xs:-ml-3 sm:-ml-4 md:-ml-12 lg:-ml-24 z-0">
-                <div className="w-24 xs:w-28 sm:w-36 md:w-52 lg:w-72 h-44 xs:h-56 sm:h-64 md:h-80 lg:h-[28rem] rounded-3xl overflow-hidden opacity-60 blur-[3px]">
-                  <img
-                    src={images[activeSlide].right}
-                    alt="Fashion model right"
-                    className={`w-full h-full object-cover transition-opacity duration-200 ease-in-out ${isTransitioning ? "opacity-60" : "opacity-100"
-                      }`}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom text content - positioned at the very bottom */}
-          <div className="absolute bottom-0 px-4 md:px-8 lg:px-16 w-full text-left">
-            <div className="ml-0 md:ml-4 lg:ml-8 pb-4 scale-[0.85] md:scale-90 lg:scale-100 origin-bottom-left">
-              <h2 className="mb-1">
-                <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 block">
-                  Welcome to
-                </span>
-                <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 block">
-                  fAIshion.AI
-                </span>
-              </h2>
-              <p className="text-xs sm:text-xs md:text-sm text-gray-600 max-w-lg">
-                Your AI shopping assistant for all apparel brands—try on
-                virtually, find your perfect size, and grab the best deals!
-              </p>
-            </div>
-
-            {/* Pagination dots */}
-            <div className="flex justify-center pb-4 md:pb-6 space-x-3 md:space-x-4 lg:space-x-5">
-              <button
-                onClick={() => changeSlide(0)}
-                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors duration-300 ${activeSlide === 0 ? "bg-gray-800" : "bg-gray-400"
-                  }`}
-                aria-label="Show slide 1"
-              ></button>
-              <button
-                onClick={() => changeSlide(1)}
-                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors duration-300 ${activeSlide === 1 ? "bg-gray-800" : "bg-gray-400"
-                  }`}
-                aria-label="Show slide 2"
-              ></button>
-              <button
-                onClick={() => changeSlide(2)}
-                className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors duration-300 ${activeSlide === 2 ? "bg-gray-800" : "bg-gray-400"
-                  }`}
-                aria-label="Show slide 3"
-              ></button>
-            </div>
-          </div>
-        </div>
+        <div className="hidden md:flex flex-1 items-center justify-center">
+  <div className="h-[547px] w-full max-w-[540px] rounded-[24px] bg-[#F7F7F7] flex items-center justify-center">
+    {/* Inner white card */}
+    <div className="w-[260px] md:w-[280px] lg:w-[300px] aspect-[3/5] rounded-[32px] bg-black flex items-center justify-center">
+      <video
+        src={signupVideo}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="h-full w-auto max-h-full rounded-[32px] object-contain"
+      />
+    </div>
+  </div>
+</div>
       </div>
     </main>
   );

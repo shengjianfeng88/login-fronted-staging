@@ -24,6 +24,7 @@ import CreditsReceived from './pages/CreditsReceived';
 import Register from './pages/Register';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionCancel from './pages/SubscriptionCancel';
+import { OnboardingFlow } from './features/auth/onboarding/OnboardingFlow';
 console.log('environment', 'staging.......,,..');
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
               <Route path='/signup' element={<SignUp />} />
               {/* Register page for invitation links */}
               <Route path='/register' element={<Register />} />
+              <Route path="/onboarding" element={<OnboardingFlow />} />
               <Route path='/done' element={<Done />} />
               <Route path='/forgot-password' element={<ForgotPassword />} />
               <Route path='/reset-password' element={<ResetPassword />} />
