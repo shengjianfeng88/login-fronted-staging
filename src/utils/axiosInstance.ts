@@ -6,7 +6,7 @@ import { setUser } from "@/store/features/userSlice";
 // 开发环境强制使用相对路径走 Vite 代理，避免 CORS
 // 生产环境使用环境变量或默认值
 const apiUrl = import.meta.env.DEV
-  ? "/v1"
+  ? "http://localhost:3000/v1"
   : import.meta.env.VITE_API_URL || "https://staging-api-auth.faishion.ai/v1";
 
 const axiosInstance = axios.create({
@@ -74,7 +74,7 @@ axiosInstance.interceptors.response.use(
 
       originalRequest._retry = true;
       isRefreshing = true;
-
+      alert("Session has expired. Attempting to refresh token...");
       const refreshToken = getRefreshToken();
 
       if (refreshToken) {
