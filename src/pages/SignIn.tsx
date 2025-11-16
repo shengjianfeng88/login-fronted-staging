@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 // import twitter from "@/public/auth/twitter.svg";
 // import axios from "axios";
 // import { jwtDecode } from "jwt-decode";
-import { z } from "zod";
+import { set, z } from "zod";
 import axiosInstance from "@/utils/axiosInstance";
 import { validateEmail } from "@/utils/validation";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -41,10 +41,10 @@ const SignIn = () => {
   const [authMethod, setAuthMethod] = useState<"passcode" | "password">("passcode");
   const [authState, setAuthState] = useState<"request" | "sent">("request");
   const [formData, setFormData] = useState({
-      email: "",
-      password: "",
-      code:""
-    });
+    email: "",
+    password: "",
+    code: Array(6).fill(""),
+  });
   //Image carrousel
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const images = [
@@ -196,9 +196,8 @@ const SignIn = () => {
      try {
       const data:any = {
       email: formData.email,
-      code: formData.code,
+      code: formData.code.join(""),
     };
-
       const res = await axiosInstance.post("/auth/verify-code", data);
       console.log("Verification successful:", res);
       //save user information
@@ -208,13 +207,20 @@ const SignIn = () => {
       console.error("Verification failed:", err);
         setError(err.response?.data?.message || "Invalid or expired code");
     } finally {
+      setFormData({...formData, code: Array(6).fill("") });
       setIsLoading(false);
+      setIsVerifying(false);
+      setTimeout(() => {
+      const inputs = document.querySelectorAll("input[name='code']");
+      (inputs[0] as HTMLInputElement)?.focus();
+    }, 0);
     }
   };
 
   const handleResendCode= async ()=>{
       setIsResending(true)
-      setFormData({...formData, code: "" });
+      setFormData({...formData, code: Array(6).fill("") });
+      setError("");
      try {
     await axiosInstance.post("/auth/request-auth", {  email: formData.email } );
     } catch (err: any) {
@@ -523,9 +529,7 @@ const SignIn = () => {
                   <p className="text-sm text-gray-600 mb-6 leading-relaxed">
                     {isLoading ? (
                       "Sending..."
-                    ) : error ? (
-                      <span className="text-red-500">{error}</span>
-                    ) : (
+                    )  : (
                       <>
                         We sent a 6-digit code to{" "}
                         <span className="font-medium text-black">
@@ -535,7 +539,7 @@ const SignIn = () => {
                     )}
                   </p>
         
-                  <form onSubmit={handleVerifyCode} className="space-y-4">
+                   <form id="otpForm"  onSubmit={handleVerifyCode} className="space-y-4">
                     <div className="flex justify-between space-x-2">
                     {Array.from({ length: 6 }).map((_, idx) => (
                       <input
@@ -546,17 +550,83 @@ const SignIn = () => {
                         inputMode="numeric"
                         value={formData.code?.[idx] || ""}   // ✅ Controlled by Redux
                         className="w-12 h-12 text-center border border-gray-300 rounded-lg text-lg font-medium focus:ring-2 focus:ring-black/70 focus:outline-none"
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, ""); // allow only digits
+                        
+                      onChange={(e) => {
+                          const digit = e.target.value.replace(/\D/g, "");
                           const next = e.target.nextElementSibling as HTMLInputElement;
-                          if (value && next) next.focus();
-                          // ✅ Update the correct character in the code
-                          const currentCode = formData.code || "";
-                          const updated =
-                          currentCode.substring(0, idx) + value + currentCode.substring(idx + 1);
-                          setFormData({...formData, code: updated });
+                          
+                          const updated = [...(formData.code || Array(6).fill(""))];
+                          updated[idx] = digit;
+
+                          setFormData({ ...formData, code: updated });
+                          console.log("Updated OTP:", updated);
+
+
+                          if (digit && next) next.focus();
+
+                          // Auto submit
+                          if (updated.every((d) => d !== "")) {
+                          setTimeout(() => {
+                            (document.getElementById("otpForm") as HTMLFormElement)?.requestSubmit();
+                          }, 0);
+                        }
                         }}
-                      />
+                        
+                        onKeyDown={(e) => {
+                                  const curr = e.currentTarget as HTMLInputElement;
+                                  const prev = curr.previousElementSibling as HTMLInputElement;
+                                  if (e.key === "Backspace") {
+                                    const updated = [...(formData.code || Array(6).fill(""))];
+
+                                    // If current box has value → clear it only
+                                    if (updated[idx] !== "") {
+                                    updated[idx] = "";
+                                    setFormData({ ...formData, code: updated });
+
+                                    // keep cursor in the current box after clearing
+                                    setTimeout(() => curr.focus(), 0);
+
+                                      return;
+                                    }
+
+                                    // If empty → move left
+                                    if (prev) prev.focus();
+                                  }
+                                }}
+                                                
+                        onPaste={(e) => {
+                        e.preventDefault();
+                        const pasted = e.clipboardData.getData("text").replace(/\D/g, "");
+                        if (!pasted) return;
+
+                        // ALWAYS fill from 0
+                        const chars = pasted.slice(0, 6).split("");
+                        const updated = Array(6)
+                          .fill("")
+                          .map((_, i) => chars[i] || "");
+
+                        setFormData({ ...formData, code: updated });
+
+                        // Find last filled index
+                        let focusIndex = 0;
+                        for (let i = 5; i >= 0; i--) {
+                          if (updated[i] !== "") {
+                            focusIndex = i;
+                            break;
+                          }
+                        }
+                        
+                          // Focus the last filled box
+                        const inputs = document.querySelectorAll("input[name='code']");
+                        (inputs[focusIndex] as HTMLInputElement | undefined)?.focus();
+
+                        // auto-submit if full
+                        if (updated.every((d) => d !== "")) {
+                          setTimeout(() => {
+                            (document.getElementById("otpForm") as HTMLFormElement)?.requestSubmit();
+                          }, 200);
+                        }
+                        }}                      />
                     ))}
                   </div>
         
