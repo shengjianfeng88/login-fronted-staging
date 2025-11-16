@@ -40,6 +40,7 @@ function App() {
             }
           >
             <Routes>
+              <Route path='/' element={<SignUp />} />
               <Route path='/signin' element={<SignIn />} />
               <Route path='/signup' element={<SignUp />} />
               {/* Register page for invitation links */}

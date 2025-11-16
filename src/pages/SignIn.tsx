@@ -20,8 +20,6 @@ import image2 from "@/assets/image_2.jpg";
 import image3 from "@/assets/image_3.jpg";
 import googleLogo from "@/assets/g-logo.png";
 import axios from "axios";
-import { getApiUrl } from "@/config/api";
-import { getAccessToken } from "@/utils/auth";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
