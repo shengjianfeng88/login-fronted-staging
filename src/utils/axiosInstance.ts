@@ -74,7 +74,6 @@ axiosInstance.interceptors.response.use(
 
       originalRequest._retry = true;
       isRefreshing = true;
-      alert("Session has expired. Attempting to refresh token...");
       const refreshToken = getRefreshToken();
 
       if (refreshToken) {
