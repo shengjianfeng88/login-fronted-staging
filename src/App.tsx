@@ -24,6 +24,7 @@ import CreditsReceived from './pages/CreditsReceived';
 import Register from './pages/Register';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionCancel from './pages/SubscriptionCancel';
+import ConfirmSignup from './pages/ConfirmSignup';
 console.log('environment', 'staging.......,,..');
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
             }
           >
             <Routes>
+              <Route path='/' element={<SignUp />} />
               <Route path='/signin' element={<SignIn />} />
               <Route path='/signup' element={<SignUp />} />
               {/* Register page for invitation links */}
@@ -51,6 +53,7 @@ function App() {
               <Route path='/verify-email' element={<VerifyEmail />} />
               <Route path='*' element={<PageNotFound />} />
               <Route path='/confirm-register' element={<ConfirmRegister />} />
+              <Route path='/confirm-signup' element={<ConfirmSignup/>} />
               <Route path='/auto-test/*' element={<AutoTest />} />
               <Route path='/faishion-chatbot' element={<ChatWidget />} />
               <Route path='/chat' element={<ChatWidget />} />

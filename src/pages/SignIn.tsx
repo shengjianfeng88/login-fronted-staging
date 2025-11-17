@@ -5,12 +5,12 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 // import twitter from "@/public/auth/twitter.svg";
 // import axios from "axios";
 // import { jwtDecode } from "jwt-decode";
-import { z } from "zod";
+import { set, z } from "zod";
 import axiosInstance from "@/utils/axiosInstance";
 import { validateEmail } from "@/utils/validation";
 import { useGoogleLogin } from "@react-oauth/google";
 import { CredentialResponse } from "@react-oauth/google";
-import { Link, useNavigate } from "react-router-dom";
+import { Link,useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { sendMessageToExtension } from "@/utils/utils";
 import { setUser } from "@/store/features/userSlice";
@@ -30,10 +30,19 @@ const SignIn = () => {
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const location = useLocation();
+  const [authMethod, setAuthMethod] = useState<"passcode" | "password">("passcode");
+  const [authState, setAuthState] = useState<"request" | "sent">("request");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    code: Array(6).fill(""),
+  });
   //Image carrousel
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const images = [
@@ -60,6 +69,17 @@ const SignIn = () => {
     [isTransitioning]
   );
 
+ //reset auth state and code based login
+  useEffect(() => {
+    if (location.state?.fromSignupRedirect) {
+      // came from signup, show code input form directly
+      setAuthState("sent");
+      // Pre-fill email if provided
+      if (location.state.email) {
+        setFormData((prev) => ({ ...prev, email: location.state.email }));
+      }
+    }
+  }, [location.state]);
   // Set up autoplay for carousel
   useEffect(() => {
     const interval = setInterval(() => {
@@ -74,6 +94,10 @@ const SignIn = () => {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      email: email,
+    }));
 
     if (email && !validateEmail(email)) {
       setEmailError("Please enter a valid email address");
@@ -82,6 +106,129 @@ const SignIn = () => {
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+  
+      // Real-time email validation
+      if (name === "email") {
+        if (value && !validateEmail(value)) {
+          setEmailError("Please enter a valid email address");
+        } else {
+          setEmailError("");
+        }
+      }
+
+    };
+  
+  const saveUserInfo=(res:any) =>{
+    
+    localStorage.setItem("accessToken", res.data.accessToken);
+    if (res.data.refreshToken) {
+          localStorage.setItem("refreshToken", res.data.refreshToken);
+        }
+    localStorage.setItem("userId", res.data.userId);
+    // Decode JWT to get user info including picture
+    let userEmail = res.data.email || '';
+    let userPicture = '';
+    try {
+      const decoded = JSON.parse(atob(res.data.accessToken.split('.')[1]));
+      userEmail = decoded.email || res.data.email || '';
+      userPicture = decoded.picture || '';
+    } catch (error) {
+      console.error('Failed to decode JWT:', error);
+    }
+
+    // Update Redux store with complete user information
+    dispatch(setUser({
+      email: userEmail,
+      picture: userPicture
+    }));
+
+    sendMessageToExtension({
+      email: res.data.email,
+      picture: res.data.picture,
+      accessToken: res.data.accessToken,
+    });
+
+  }
+  const handleRequestCode = async (e: React.FormEvent<HTMLFormElement>) => {
+  try {
+      e.preventDefault();
+      setError("");
+      setIsLoading(true);
+      const data = new FormData(e.currentTarget);
+      const email = data.get("email") as string;
+      setFormData({
+        ...formData,
+        email: email,
+      });
+      const response = await axiosInstance.post("/auth/request-auth", { email });
+      if (response.data.action === "signup") {
+      // 🟣 New user — switch to signup
+        navigate("/signup", {
+        state: {
+        fromSignInRedirect: true,
+        email: formData.email, // pass the email forward
+          },
+        });
+        return; 
+      }
+      console.log("code sent to email")
+      setAuthState("sent");
+    } catch (err: any) {
+      console.error("Error sending code:", err);
+        setError("Please try again later")
+    } finally {
+        setIsLoading(false);
+  }
+};
+
+  const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setError("");
+      setIsLoading(true);
+     try {
+      const data:any = {
+      email: formData.email,
+      code: formData.code.join(""),
+    };
+      const res = await axiosInstance.post("/auth/verify-code", data);
+      console.log("Verification successful:", res);
+      //save user information
+      saveUserInfo(res);
+      navigate("/done");
+    } catch (err: any) {
+      console.error("Verification failed:", err);
+        setError(err.response?.data?.message || "Invalid or expired code");
+    } finally {
+      setFormData({...formData, code: Array(6).fill("") });
+      setIsLoading(false);
+      setIsVerifying(false);
+      setTimeout(() => {
+      const inputs = document.querySelectorAll("input[name='code']");
+      (inputs[0] as HTMLInputElement)?.focus();
+    }, 0);
+    }
+  };
+
+  const handleResendCode= async ()=>{
+      setIsResending(true)
+      setFormData({...formData, code: Array(6).fill("") });
+      setError("");
+     try {
+    await axiosInstance.post("/auth/request-auth", {  email: formData.email } );
+    } catch (err: any) {
+      console.error("Error sending code:", err);
+        setError("Please try again later")
+    } finally {
+        setIsResending(false);
+  }
+
+  }
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -133,56 +280,27 @@ const SignIn = () => {
         ...validatedData,
         rememberMe,
       });
-      console.log("Full response data:", res.data);
-      localStorage.setItem("accessToken", res.data.accessToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
-      localStorage.setItem("userId", res.data.userId);
 
-      // Decode JWT to get user info including picture
-      let userEmail = res.data.email || '';
-      let userPicture = '';
-      try {
-        const decoded = JSON.parse(atob(res.data.accessToken.split('.')[1]));
-        userEmail = decoded.email || res.data.email || '';
-        userPicture = decoded.picture || '';
-      } catch (error) {
-        console.error('Failed to decode JWT:', error);
+        saveUserInfo(res)
+      
+        navigate("/done");
+        
+      } catch (err: any) {
+        if (err instanceof z.ZodError) {
+          setError(err.errors[0].message);
+        } else {
+          console.log(err.response?.data?.message || "Login failed");
+          setError("Login failed");
+         
+        }
+      } finally {
+        setIsLoading(false);
       }
-
-      localStorage.setItem("email", userEmail);
-
-      // Update Redux store with complete user information
-      dispatch(setUser({
-        email: userEmail,
-        picture: userPicture
-      }));
-
-      sendMessageToExtension({
-        email: res.data.email,
-        picture: res.data.picture,
-        accessToken: res.data.accessToken,
-      });
-      navigate("/done");
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        setError(err.errors[0].message);
-      } else if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "Login failed");
-      } else {
-        setError("Login failed");
-      }
-    } finally {
-      setIsLoading(false);
     }
-  };
 
   const handleGoogleLoginSuccess = async (response: CredentialResponse) => {
     try {
       const token = response.credential;
-      // const productionLoginEndpoint = "https://staging-api-auth.faishion.ai/auth/login";
-      // const stagingLoginEndpoint = "https://login-fronted-staging.vercel.app/auth/login";
-      // const loginEndpoint = window.location.hostname === "login-fronted-staging.vercel.app" ? stagingLoginEndpoint : productionLoginEndpoint;
-      // const res = await axios.post(loginEndpoint, { token });
       const res = await axiosInstance.post("/auth/google-auth", { token });
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
@@ -262,11 +380,11 @@ const SignIn = () => {
             </span>
           </Link>
 
-          <div className="p-4 md:p-6 lg:p-8 flex flex-col w-full h-full justify-center pt-16">
+          <div className="p-4 mt-10 md:p-6 lg:p-8 flex flex-col w-full h-full justify-center pt-16">
             {/* Form content */}
             <div className="w-full max-w-[90%] mx-auto">
               {/* Welcome text */}
-              <div className="mb-5">
+              <div className="mb-20">
                 <h1 className="font-semibold text-2xl md:text-3xl text-[#2F2F2F]">
                   Welcome back
                 </h1>
@@ -278,7 +396,7 @@ const SignIn = () => {
               {error && (
                 <div className="text-red-500 text-xs mb-3">{error}</div>
               )}
-
+             {authMethod === "password"  && authState === "request" && 
               <form onSubmit={handleSubmit} className="w-full">
                 {/* Email input */}
                 <div className="mb-3">
@@ -286,8 +404,10 @@ const SignIn = () => {
                     type="email"
                     name="email"
                     placeholder="Email"
-                    onChange={handleEmailChange}
-                    className={`w-full h-10 border rounded-lg px-4 text-sm ${emailError ? "border-red-500" : "border-[#DADCE0]"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`w-full h-10 border rounded-lg px-4 text-sm ${
+                      emailError ? "border-red-500" : "border-[#DADCE0]"
                       }`}
                     autoComplete="email"
                   />
@@ -302,6 +422,8 @@ const SignIn = () => {
                     type="password"
                     name="password"
                     placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
                     className="w-full h-10 border border-[#DADCE0] rounded-lg px-4 text-sm"
                     autoComplete="current-password"
                   />
@@ -339,8 +461,195 @@ const SignIn = () => {
                   className="w-full h-10 bg-[#2F2F2F] rounded-lg text-white font-bold text-sm flex items-center justify-center"
                 >
                   {isLoading ? "Signing in..." : "LOGIN"}
+                
                 </button>
+
+                <p
+                  onClick={() => {
+                    setError("")
+                    setAuthMethod("passcode");
+                  }}
+                  className="text-center text-sm mt-3 text-gray-600 cursor-pointer hover:underline"
+                >
+                  Use code instead
+                </p>
               </form>
+              }
+
+              {authMethod === "passcode" && authState === "request" && 
+              <form onSubmit={handleRequestCode} className="w-full">
+                {/* Email input */}
+                <div className="mb-3">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`w-full h-10 border rounded-lg px-4 text-sm ${
+                      emailError ? "border-red-500" : "border-[#DADCE0]"
+                      }`}
+                    autoComplete="email"
+                  />
+                  {emailError && (
+                    <p className="text-red-500 text-xs mt-1">{emailError}</p>
+                  )}
+                </div>
+                {/* Login button */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-10 bg-[#2F2F2F] rounded-lg text-white font-bold text-sm flex items-center justify-center"
+                >
+                  {isLoading ? "Signing in..." : "LOGIN"}
+                </button>
+
+                   <p
+                  onClick={() => {
+                    setError("")
+                    setAuthMethod("password");
+                  }}
+                  className="text-center text-sm mt-3 text-gray-600 cursor-pointer hover:underline"
+                >
+                  Use password instead
+                </p>
+              </form>
+                }
+
+
+                  {/* --- Code verification step --- */}
+              {authState === "sent" && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">
+                    Step 2 of 3
+                  </p>
+                  <h3 className="text-xl font-semibold mb-2">Check your inbox</h3>
+                  <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                    {isLoading ? (
+                      "Sending..."
+                    )  : (
+                      <>
+                        We sent a 6-digit code to{" "}
+                        <span className="font-medium text-black">
+                          {formData.email}
+                        </span>.
+                      </>
+                    )}
+                  </p>
+        
+                   <form id="otpForm"  onSubmit={handleVerifyCode} className="space-y-4">
+                    <div className="flex justify-between space-x-2">
+                    {Array.from({ length: 6 }).map((_, idx) => (
+                      <input
+                        key={idx}
+                        name="code"
+                        type="text"
+                        maxLength={1}
+                        inputMode="numeric"
+                        value={formData.code?.[idx] || ""}   // ✅ Controlled by Redux
+                        className="w-12 h-12 text-center border border-gray-300 rounded-lg text-lg font-medium focus:ring-2 focus:ring-black/70 focus:outline-none"
+                        
+                      onChange={(e) => {
+                          const digit = e.target.value.replace(/\D/g, "");
+                          const next = e.target.nextElementSibling as HTMLInputElement;
+                          
+                          const updated = [...(formData.code || Array(6).fill(""))];
+                          updated[idx] = digit;
+
+                          setFormData({ ...formData, code: updated });
+                          console.log("Updated OTP:", updated);
+
+
+                          if (digit && next) next.focus();
+
+                          // Auto submit
+                          if (updated.every((d) => d !== "")) {
+                          setTimeout(() => {
+                            (document.getElementById("otpForm") as HTMLFormElement)?.requestSubmit();
+                          }, 0);
+                        }
+                        }}
+                        
+                        onKeyDown={(e) => {
+                                  const curr = e.currentTarget as HTMLInputElement;
+                                  const prev = curr.previousElementSibling as HTMLInputElement;
+                                  if (e.key === "Backspace") {
+                                    const updated = [...(formData.code || Array(6).fill(""))];
+
+                                    // If current box has value → clear it only
+                                    if (updated[idx] !== "") {
+                                    updated[idx] = "";
+                                    setFormData({ ...formData, code: updated });
+
+                                    // keep cursor in the current box after clearing
+                                    setTimeout(() => curr.focus(), 0);
+
+                                      return;
+                                    }
+
+                                    // If empty → move left
+                                    if (prev) prev.focus();
+                                  }
+                                }}
+                                                
+                        onPaste={(e) => {
+                        e.preventDefault();
+                        const pasted = e.clipboardData.getData("text").replace(/\D/g, "");
+                        if (!pasted) return;
+
+                        // ALWAYS fill from 0
+                        const chars = pasted.slice(0, 6).split("");
+                        const updated = Array(6)
+                          .fill("")
+                          .map((_, i) => chars[i] || "");
+
+                        setFormData({ ...formData, code: updated });
+
+                        // Find last filled index
+                        let focusIndex = 0;
+                        for (let i = 5; i >= 0; i--) {
+                          if (updated[i] !== "") {
+                            focusIndex = i;
+                            break;
+                          }
+                        }
+                        
+                          // Focus the last filled box
+                        const inputs = document.querySelectorAll("input[name='code']");
+                        (inputs[focusIndex] as HTMLInputElement | undefined)?.focus();
+
+                        // auto-submit if full
+                        if (updated.every((d) => d !== "")) {
+                          setTimeout(() => {
+                            (document.getElementById("otpForm") as HTMLFormElement)?.requestSubmit();
+                          }, 200);
+                        }
+                        }}                      />
+                    ))}
+                  </div>
+        
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className={`w-full py-3 rounded-lg font-medium transition ${
+                        isLoading
+                          ? "bg-gray-400 text-white cursor-not-allowed"
+                          : "bg-black text-white hover:bg-gray-900"
+                      }`}
+                    >
+                      {isLoading ? "Verifying..." : "Verify Code"}
+                    </button>
+        
+                    <button
+                      type="button"
+                      onClick={(e)=>{e.preventDefault(); handleResendCode()}}
+                      className="w-full text-sm text-gray-600 hover:underline mt-2"
+                    >
+                       {isResending ? "Resending..." : "Resend Code"}
+                    </button>
+                  </form>
+                </div>
+              )}  
 
               {/* Or divider */}
               <div className="flex items-center my-4 w-full">
@@ -398,7 +707,8 @@ const SignIn = () => {
                   <img
                     src={images[activeSlide].left}
                     alt="Fashion model left"
-                    className={`w-full h-full object-cover transition-opacity duration-200 ease-in-out ${isTransitioning ? "opacity-60" : "opacity-100"
+                    className={`w-full h-full object-cover transition-opacity duration-200 ease-in-out ${
+                      isTransitioning ? "opacity-60" : "opacity-100"
                       }`}
                   />
                 </div>
