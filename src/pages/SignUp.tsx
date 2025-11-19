@@ -73,7 +73,7 @@ const SignUp = () => {
     }
   }, [searchParams]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (location.state?.fromSignInRedirect) {
       // came from signup, show code input form directly
       setAuthState("sent");
@@ -84,7 +84,8 @@ const SignUp = () => {
     }
     else {
       setAuthState("request");
-      setAuthMethod("link");}
+      setAuthMethod("link");
+    }
   }, [location.state]);
 
   // Carousel state
@@ -153,7 +154,7 @@ const SignUp = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setError("")
     e.preventDefault();
-    if(authMethod == "password")
+    if (authMethod == "password")
       if (!validateForm()) return;
     setIsLoading(true);
     let endpoint = "";
@@ -177,20 +178,20 @@ const SignUp = () => {
       const res = await axiosInstance.post(endpoint, requestData);
       const response = res.data;
 
-     if (response.action === "login") {
-      // 🟣 Existing user — switch to login
+      if (response.action === "login") {
+        // 🟣 Existing user — switch to login
         navigate("/signin", {
-        state: {
-        fromSignupRedirect: true,
-        email: formData.email, // 👈 pass the email forward
-    },
-  });
-    } 
-    //setting the state to sent renders the link sent page
-    setAuthState("sent");
+          state: {
+            fromSignupRedirect: true,
+            email: formData.email, // 👈 pass the email forward
+          },
+        });
+      }
+      //setting the state to sent renders the link sent page
+      setAuthState("sent");
 
     } catch (_error) {
-      
+
       const err = _error as any;
       console.log(err.response?.data?.message || "Something went wrong");
       setError("Signup failed Please try again later");
@@ -200,13 +201,20 @@ const SignUp = () => {
     }
   };
 
-    const handleResendLink = async () => {
+  const handleResendLink = async () => {
     setIsLoading(true);
     setError("");
     try {
-      const res = await axiosInstance.post("/auth/request-auth", {
+      const requestData: any = {
         email: formData.email,
-      });
+      };
+
+      // 如果有推荐码，添加到请求中
+      if (formData.referralCode.trim()) {
+        requestData.referralCode = formData.referralCode.trim();
+      }
+
+      const res = await axiosInstance.post("/auth/request-auth", requestData);
       console.log("Resend link response:", res.data);
     } catch (err) {
       console.error("Resend link failed:", err);
@@ -274,7 +282,7 @@ const SignUp = () => {
         }
 
         localStorage.setItem("email", userEmail);
-        
+
         // Update Redux store with complete user information
         dispatch(setUser({
           email: userEmail,
@@ -360,91 +368,91 @@ const SignUp = () => {
 
               {/* Password-based signup */}
               {authMethod === "password" && authState === "request" && (
-              <form onSubmit={handleSubmit} className="w-full">
-                {/* Email input */}
-                <div className="mb-3">
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email"
-                    className={`w-full h-10 border rounded-lg px-4 text-sm ${emailError || errors.email
-                      ? "border-red-500"
-                      : "border-[#DADCE0]"
-                      }`}
-                    autoComplete="email"
-                  />
-                  {(emailError || errors.email) && (
-                    <p className="text-red-500 text-xs mt-1 text-left">
-                      {emailError || errors.email}
-                    </p>
-                  )}
-                </div>
-
-                {/* Password input */}
-                <div className="mb-3">
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Password"
-                    className="w-full h-10 border border-[#DADCE0] rounded-lg px-4 text-sm"
-                    autoComplete="new-password"
-                  />
-                  {formData.password && (
-                    <div className="mt-2">
-                      <div className="flex space-x-1">
-                        {[...Array(5)].map((_, i) => (
-                          <div
-                            key={i}
-                            className={`h-2 w-full rounded transition-colors duration-200 ${i < passwordStrength
-                              ? getPasswordStrengthColor(passwordStrength)
-                              : "bg-gray-200"
-                              }`}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1">
-                        Password Strength:{" "}
-                        {getPasswordStrengthText(passwordStrength)}
+                <form onSubmit={handleSubmit} className="w-full">
+                  {/* Email input */}
+                  <div className="mb-3">
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="Email"
+                      className={`w-full h-10 border rounded-lg px-4 text-sm ${emailError || errors.email
+                        ? "border-red-500"
+                        : "border-[#DADCE0]"
+                        }`}
+                      autoComplete="email"
+                    />
+                    {(emailError || errors.email) && (
+                      <p className="text-red-500 text-xs mt-1 text-left">
+                        {emailError || errors.email}
                       </p>
-                    </div>
-                  )}
-                  {errors.password && (
-                    <p className="text-red-500 text-xs mt-1 text-left">
-                      {errors.password}
-                    </p>
-                  )}
-                </div>
+                    )}
+                  </div>
 
-                {/* Confirm Password input */}
-                <div className="mb-4">
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    placeholder="Confirm Password"
-                    className="w-full h-10 border border-[#DADCE0] rounded-lg px-4 text-sm"
-                    autoComplete="new-password"
-                  />
-                  {errors.confirmPassword && (
-                    <p className="text-red-500 text-xs mt-1 text-left">
-                      {errors.confirmPassword}
-                    </p>
-                  )}
-                </div>
+                  {/* Password input */}
+                  <div className="mb-3">
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Password"
+                      className="w-full h-10 border border-[#DADCE0] rounded-lg px-4 text-sm"
+                      autoComplete="new-password"
+                    />
+                    {formData.password && (
+                      <div className="mt-2">
+                        <div className="flex space-x-1">
+                          {[...Array(5)].map((_, i) => (
+                            <div
+                              key={i}
+                              className={`h-2 w-full rounded transition-colors duration-200 ${i < passwordStrength
+                                ? getPasswordStrengthColor(passwordStrength)
+                                : "bg-gray-200"
+                                }`}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Password Strength:{" "}
+                          {getPasswordStrengthText(passwordStrength)}
+                        </p>
+                      </div>
+                    )}
+                    {errors.password && (
+                      <p className="text-red-500 text-xs mt-1 text-left">
+                        {errors.password}
+                      </p>
+                    )}
+                  </div>
 
-                {/* Sign Up button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full h-10 bg-[#2F2F2F] rounded-lg text-white font-bold text-sm flex items-center justify-center"
-                >
-                  {isLoading ? "Signing up..." : "SIGN UP"}
-                </button>
+                  {/* Confirm Password input */}
+                  <div className="mb-4">
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Confirm Password"
+                      className="w-full h-10 border border-[#DADCE0] rounded-lg px-4 text-sm"
+                      autoComplete="new-password"
+                    />
+                    {errors.confirmPassword && (
+                      <p className="text-red-500 text-xs mt-1 text-left">
+                        {errors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Sign Up button */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-10 bg-[#2F2F2F] rounded-lg text-white font-bold text-sm flex items-center justify-center"
+                  >
+                    {isLoading ? "Signing up..." : "SIGN UP"}
+                  </button>
                   <p
                     onClick={() => {
                       setAuthMethod("link");
@@ -456,29 +464,29 @@ const SignUp = () => {
                 </form>
               )}
 
-               {/* Link-based signup */}
+              {/* Link-based signup */}
               {authMethod === "link" && authState === "request" && (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                   {/* Email input */}
-                <div className="mb-3">
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email"
-                    className={`w-full h-10 border rounded-lg px-4 text-sm ${emailError || errors.email
-                      ? "border-red-500"
-                      : "border-[#DADCE0]"
-                      }`}
-                    autoComplete="email"
-                  />
-                  {(emailError || errors.email) && (
-                    <p className="text-red-500 text-xs mt-1 text-left">
-                      {emailError || errors.email}
-                    </p>
-                  )}
-                </div>
+                  {/* Email input */}
+                  <div className="mb-3">
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="Email"
+                      className={`w-full h-10 border rounded-lg px-4 text-sm ${emailError || errors.email
+                        ? "border-red-500"
+                        : "border-[#DADCE0]"
+                        }`}
+                      autoComplete="email"
+                    />
+                    {(emailError || errors.email) && (
+                      <p className="text-red-500 text-xs mt-1 text-left">
+                        {emailError || errors.email}
+                      </p>
+                    )}
+                  </div>
                   <button
                     type="submit"
                     disabled={isLoading}
@@ -505,33 +513,32 @@ const SignUp = () => {
                     We sent a sign-up link to <b>{formData.email}</b>.
                   </p>
                   {/* Buttons */}
-                    <div className="space-y-3">
-                      <button
-                        onClick={handleResendLink}
-                        disabled={isLoading}
-                        className={`w-full py-3 rounded-lg font-medium transition ${
-                          isLoading
-                            ? "bg-gray-400 text-white cursor-not-allowed"
-                            : "bg-black text-white hover:bg-gray-900"
+                  <div className="space-y-3">
+                    <button
+                      onClick={handleResendLink}
+                      disabled={isLoading}
+                      className={`w-full py-3 rounded-lg font-medium transition ${isLoading
+                          ? "bg-gray-400 text-white cursor-not-allowed"
+                          : "bg-black text-white hover:bg-gray-900"
                         }`}
-                      >
-                        {isLoading ? "Sending..." : "Resend link"}
-                      </button>
-              
-                      <button
-                        onClick={() => {
-                          setAuthMethod("password");
-                          setAuthState("request");
-                        }}
-                        className="w-full py-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-black font-medium transition"
-                      >
-                        Create password instead
-                      </button>
-                    </div>
+                    >
+                      {isLoading ? "Sending..." : "Resend link"}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setAuthMethod("password");
+                        setAuthState("request");
+                      }}
+                      className="w-full py-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-black font-medium transition"
+                    >
+                      Create password instead
+                    </button>
+                  </div>
                 </div>
               )}
 
-             {/* Divider */}
+              {/* Divider */}
               <div className="flex items-center my-4">
                 <div className="flex-grow h-px bg-gray-300"></div>
                 <span className="mx-2 text-sm text-gray-500">or</span>
