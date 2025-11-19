@@ -25,7 +25,9 @@ const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
-
+  const emailOnlySchema = z.object({
+  email: z.string().email("Invalid email")
+});
 const SignIn = () => {
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -43,6 +45,10 @@ const SignIn = () => {
     password: "",
     code: Array(6).fill(""),
   });
+    const [errors, setErrors] = useState({
+      email: "",
+      password: "",
+    });
   //Image carrousel
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const images = [
@@ -105,7 +111,34 @@ const SignIn = () => {
       setEmailError("");
     }
   };
-
+  const validateForm = () => {
+    try {
+    if (authMethod === "password") {
+      signInSchema.parse({email: formData.email, password: formData.password});              
+    } else {
+     emailOnlySchema.parse({ email: formData.email });       
+    }
+      setErrors({
+        email: "",
+        password: "",
+      });
+      setError("");
+      return true;
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const newErrors = {
+          email: "",
+          password: "",
+        };
+        err.errors.forEach((e) => {
+          const field = e.path[0] as keyof typeof newErrors;
+          newErrors[field] = e.message;
+        });
+        setErrors({ ...newErrors });;
+      }
+      return false;
+    }
+  };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
       setFormData((prev) => ({
@@ -158,6 +191,7 @@ const SignIn = () => {
   const handleRequestCode = async (e: React.FormEvent<HTMLFormElement>) => {
   try {
       e.preventDefault();
+      if(!validateForm()) return;
       setError("");
       setIsLoading(true);
       const data = new FormData(e.currentTarget);
@@ -217,6 +251,7 @@ const SignIn = () => {
 
   const handleResendCode= async ()=>{
       setIsResending(true)
+      if (!validateForm()) return;
       setFormData({...formData, code: Array(6).fill("") });
       setError("");
      try {
@@ -231,6 +266,7 @@ const SignIn = () => {
   }
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setError("");
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
@@ -411,8 +447,8 @@ const SignIn = () => {
                       }`}
                     autoComplete="email"
                   />
-                  {emailError && (
-                    <p className="text-red-500 text-xs mt-1">{emailError}</p>
+                  {emailError  || errors.email && (
+                    <p className="text-red-500 text-xs mt-1">{emailError || errors.email}</p>
                   )}
                 </div>
 
@@ -491,8 +527,8 @@ const SignIn = () => {
                       }`}
                     autoComplete="email"
                   />
-                  {emailError && (
-                    <p className="text-red-500 text-xs mt-1">{emailError}</p>
+                  {emailError  || errors.email && (
+                    <p className="text-red-500 text-xs mt-1">{emailError || errors.email}</p>
                   )}
                 </div>
                 {/* Login button */}

@@ -37,6 +37,12 @@ const userSchema = z
     path: ["confirmPassword"],
   });
 
+  const emailOnlySchema = z.object({
+  email: z.string().email("Invalid email"),
+  referralCode: z.string().optional(),
+});
+
+
 const SignUp = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -123,7 +129,12 @@ const SignUp = () => {
 
   const validateForm = () => {
     try {
-      userSchema.parse(formData);
+
+    if (authMethod === "password") {
+      userSchema.parse(formData);              // full schema
+    } else {
+      emailOnlySchema.parse(formData);         // email only
+    }
       setErrors({
         email: "",
         password: "",
@@ -154,8 +165,8 @@ const SignUp = () => {
     setError("")
     console.log("Form submitted with data:", formData);
     e.preventDefault();
-    if(authMethod == "password")
-      if (!validateForm()) return;
+    
+    if (!validateForm()) return;
     setIsLoading(true);
     let endpoint = "";
     try {
@@ -204,8 +215,7 @@ const SignUp = () => {
   const handleResendLink = async () => {
     setIsLoading(true);
     setError("");
-    if(authMethod == "password")
-      if (!validateForm()) return;
+    if (!validateForm()) return;
     setIsLoading(true);
     let endpoint = "";
     try {
