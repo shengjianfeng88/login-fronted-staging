@@ -152,6 +152,7 @@ const SignUp = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setError("")
+    console.log("Form submitted with data:", formData);
     e.preventDefault();
     if(authMethod == "password")
       if (!validateForm()) return;
@@ -166,7 +167,7 @@ const SignUp = () => {
       if (formData.referralCode.trim()) {
         requestData.referralCode = formData.referralCode.trim();
       }
-
+      
       if (authMethod === "password") {
         endpoint = "/auth/request-register";
         requestData.password = formData.password;
@@ -200,18 +201,36 @@ const SignUp = () => {
     }
   };
 
-    const handleResendLink = async () => {
+  const handleResendLink = async () => {
     setIsLoading(true);
     setError("");
+    if(authMethod == "password")
+      if (!validateForm()) return;
+    setIsLoading(true);
+    let endpoint = "";
     try {
-      const res = await axiosInstance.post("/auth/request-auth", {
+      const requestData: any = {
         email: formData.email,
-      });
-      console.log("Resend link response:", res.data);
-    } catch (err) {
+      };
+
+      // 如果有推荐码，添加到请求中
+      if (formData.referralCode.trim()) {
+        requestData.referralCode = formData.referralCode.trim();
+      }
+      
+      if (authMethod === "password") {
+        endpoint = "/auth/request-register";
+        requestData.password = formData.password;
+      } else {
+        endpoint = "/auth/request-auth";
+      }
+      const res = await axiosInstance.post(endpoint, requestData);
+      const response = res.data;
+    }
+    catch (err) {
       console.error("Resend link failed:", err);
       const error = err as any;
-      setError(error.response?.data?.message || "Something went wrong");
+      setError(error.response?.data?.message || "Resend link failed. Please try again later.");
     } finally {
       setIsLoading(false);
     }
