@@ -174,7 +174,7 @@ const SignUp = () => {
       } else {
         endpoint = "/auth/request-auth";
       }
-      console.log("Submitting to endpoint:", endpoint, "with data:", requestData);
+
       const res = await axiosInstance.post(endpoint, requestData);
       const response = res.data;
 
@@ -261,7 +261,6 @@ const SignUp = () => {
   const handleGoogleLoginSuccess = async (response: CredentialResponse) => {
     try {
       const token = response.credential;
-      console.log("Post request to google-auth with referral code:", formData.referralCode);
       const res = await axiosInstance.post(
         getApiUrl("AUTH_API", "/auth/google-auth"),
         {
