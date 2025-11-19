@@ -23,7 +23,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({
   const dailyTryOns = String(freeTryOnQuota ?? 0);
 
   return (
-    <div className={`grid grid-cols-1 ${hasPremiumAccess ? "sm:grid-cols-3" : "sm:grid-cols-1"} gap-6 mb-4 mt-4`}>
+    <div className={`grid grid-cols-1 ${hasPremiumAccess ? "sm:grid-cols-3" : credits > 0 ? "sm:grid-cols-2" : "sm:grid-cols-1"} gap-6 mb-4 mt-4`}>
       {hasPremiumAccess ? (
         <>
           {/* 订阅积分卡片 */}
@@ -81,8 +81,30 @@ const StatsCards: React.FC<StatsCardsProps> = ({
         </>
       ) : (
         <>
-          {/* 免费用户配额卡片 - 与付费卡片样式保持一致 */}
-          <div className="bg-gradient-to-br from-blue-50 via-[#C7C0F0]/40 to-pink-50 rounded-xl p-6 flex flex-col h-full">
+          {/* 免费用户积分卡片 - 统一显示风格 */}
+          {credits > 0 && (
+            <div className="bg-gradient-to-br from-blue-50 via-[#C7C0F0]/40 to-pink-50 rounded-xl p-6 flex flex-col h-full">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">Credits</h3>
+              </div>
+
+              <div className="flex flex-col items-center justify-center flex-1">
+                <div className="text-3xl font-bold text-brand-primary">
+                  {String(credits)}
+                </div>
+                <div className="text-sm text-gray-600 mt-1">credits available</div>
+              </div>
+
+              <div className="mt-auto pt-4">
+                <div className="text-xs text-gray-500 text-center">
+                  From your referral bonus
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 免费用户配额卡片 */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col h-full">
             <div className="text-center mb-4">
               <h3 className="text-lg font-semibold text-gray-800">Your Quota</h3>
             </div>
