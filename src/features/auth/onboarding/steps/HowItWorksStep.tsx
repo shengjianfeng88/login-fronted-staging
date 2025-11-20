@@ -15,24 +15,31 @@ const HOW_IT_WORKS_STEPS = [
     id: 1,
     stepLabel: "01 / 03",
     title: "Step 1: Find",
-    description:
-      "Scroll through your favorite fashion sites and spot a piece you love. Find what inspires your next look.",
+    descriptionLines: [
+      "Scroll through your favorite fashion sites and spot a piece you love.",
+      "Find what inspires your next look.",],
     videoSrc: step1Img,
   },
   {
     id: 2,
     stepLabel: "02 / 03",
-    title: "Step 2: Click",
-    description:
-      'Right-click the image and select "Try On Now | fAIshion." Your try-on is on the way, made just for you.',
+    title: "Step 2: Right Click",
+     descriptionLines: [
+      'Right-click the clothing image and select',
+      '"Try On Now | fAIshion"',
+      "Your try-on will start instantly, no extra steps.",
+    ],
     videoSrc: step2Img,
   },
   {
     id: 3,
     stepLabel: "03 / 03",
-    title: "Step 3: Flaunt",
-    description:
-      "Yay, your new look is ready! View your personalized try-on and flaunt your style with confidence.",
+    title: "Step 3: See your look",
+    descriptionLines: [
+      "Your personalized try-on is ready!",
+      "View your personalized try-on and flaunt your style ",
+      "with confidence."
+    ],
     videoSrc: step3Img,
   },
 ];
@@ -155,7 +162,7 @@ export const HowItWorksStep: React.FC<HowItWorksStepProps> = ({
               </div>
 
               {/* Text block on the right */}
-              <div className="w-full md:w-[50%] flex flex-col justify-center">
+              <div className="w-full md:w-[50%] flex flex-col justify-center md:items-start items-center text-center md:text-left">
                 {/* 01 / 03 */}
                 <p className="text-[14px] md:text-[16px] leading-[24px] font-bold text-[#6A5ACD]">
                   {String(index + 1).padStart(2, "0")} /{" "}
@@ -163,17 +170,34 @@ export const HowItWorksStep: React.FC<HowItWorksStepProps> = ({
                 </p>
 
                 {/* Step title */}
-                <h2 className="mt-2 md:mt-3 text-[28px] md:text-[40px] lg:text-[48px] leading-[32px] md:leading-[44px] lg:leading-[48px] font-medium text-[#0A0A0A]">
+                <h2 className="  mt-2 md:mt-3
+    text-[28px] md:text-[40px] lg:text-[48px]
+    leading-[1.0]
+    font-medium
+    text-[#0A0A0A]
+    max-w-[420px]">
                   {step.title}
                 </h2>
 
                 {/* Body text */}
-                <p className="mt-3 text-[14px] md:text-[16px] lg:text-[18px] leading-[1.2] text-[#000000] max-w-[465px]">
-                  {step.description}
+                <p className=" mt-3
+    text-[14px] md:text-[18px]
+    leading-[1.2]
+    font-medium
+    text-[#565656]
+    max-w-[465px]
+    whitespace-pre-line">
+                 {step.descriptionLines.map((line) => (
+    <p key={line}>{line}</p>
+  ))}
                 </p>
 
                 {/* “Scroll to continue” a bit lower */}
-                <div className="mt-10 md:mt-10 flex items-center gap-2 text-[12px] md:text-[14px] leading-[20px] text-[#6A7282]">
+                <div className="mt-10 md:mt-16
+    flex items-center gap-2
+    text-[12px] md:text-[14px]
+    leading-[20px]
+    text-[#6A7282]">
                   <span>Scroll to continue</span>
                   <span
                     aria-hidden
@@ -190,7 +214,7 @@ export const HowItWorksStep: React.FC<HowItWorksStepProps> = ({
           <button
             type="button"
             onClick={onNext}
-            className="inline-flex items-center gap-2 rounded-full bg-[#6A5ACD] px-6 md:px-7 py-2 md:py-2.5 text-[13px] md:text-[15px] font-semibold text-white shadow-sm hover:bg-[#5b4bc2] transition-colors"
+            className="inline-flex items-center gap-2 rounded-full bg-[#7764EC] px-6 md:px-7 py-2 md:py-2.5 text-[13px] md:text-[15px] font-semibold text-white shadow-sm hover:bg-[#5b4bc2] transition-colors"
           >
             <span>Next</span>
             <span

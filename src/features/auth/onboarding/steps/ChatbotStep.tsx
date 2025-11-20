@@ -33,16 +33,30 @@ export const ChatbotStep: React.FC<ChatbotStepProps> = ({ onBack, onNext }) => {
           </button>
       </div>
 
-      {/* Title + video */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-16 pb-10">
-        {/* Title */}
-        <h1 className="mb-8 text-[32px] md:text-[40px] lg:text-[48px] font-bold text-[#000000] text-center">
-          Chatbot
-        </h1>
+     <section className="w-full flex flex-col items-center mt-10">
+  {/* title + description block */}
+  <div className="w-full max-w-[710px] flex flex-col items-center text-center gap-[22px]">
+    <h2 className="text-[40px] md:text-[48px] font-bold text-[#000000]">
+      Chatbot
+    </h2>
+    <p className="text-[18px] font-normal text-[#000000] leading-[1.2]">
+      Ask for outfit ideas, explore new looks, or get help styling for any
+      occasion, all with one quick message.
+    </p>
+  </div>
 
-        {/* Centered video with purple border */}
-        <div className="w-full max-w-[640px] aspect-[4/3] flex items-center justify-center">
-          <div className="w-full h-full rounded-[32px] border-[3px] border-[#6A5ACD] overflow-hidden bg-white">
+       
+        <div className="mt-10 w-full flex justify-center">
+    <div
+      className="
+        w-full max-w-[602px]
+        aspect-[602/486]
+        rounded-[18px]
+        border-[7px] border-[#6A5ACD]
+        shadow-[0_4px_14.7px_rgba(0,0,0,0.25)]
+        overflow-hidden bg-white
+      "
+    >
             <video
               src={chatbotVideo}
               className="w-full h-full object-cover"
@@ -53,7 +67,8 @@ export const ChatbotStep: React.FC<ChatbotStepProps> = ({ onBack, onNext }) => {
             />
           </div>
         </div>
+      </section>
       </div>
-    </div>
+  
   );
 };

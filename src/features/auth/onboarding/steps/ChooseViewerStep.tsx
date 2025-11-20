@@ -65,7 +65,7 @@ export const ChooseViewerStep: React.FC<ChooseViewerStepProps> = ({
           <h3 className="text-[24px] leading-[48.13px] font-bold text-[#000000] text-center">
             Use Your Own Photo
           </h3>
-          <p className="mt-2 text-[14px] leading-[24px] font-normal text-[#000000] text-center">
+          <p className="mt-2 text-[14px] leading-[24px] font-inter text-[#000000] text-center max-w-[240px] mx-auto">
             Upload a full-body photo for the most accurate try-on experience.
           </p>
 
@@ -99,7 +99,7 @@ export const ChooseViewerStep: React.FC<ChooseViewerStepProps> = ({
           <h3 className="text-[24px] leading-[48.13px] font-bold text-[#000000] text-center">
             Use a Sample Model
           </h3>
-          <p className="mt-2 text-[14px] leading-[24px] font-normal text-[#000000] text-center">
+          <p className="mt-2 text-[14px] leading-[24px] font-inter text-[#000000] text-center">
             Don’t have a photo ready? Start faster by trying outfits on a model
             similar to you.
           </p>

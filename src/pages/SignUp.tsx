@@ -14,7 +14,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { sendMessageToExtension } from "@/utils/utils";
 import { setUser } from "@/store/features/userSlice";
-import signupVideo from "@/assets/onboarding/sora try on.mp4";
+import signupVideo from "@/assets/onboarding/01e8f33d7c22ebfd0103700399fef54dcb_4610.mp4video.mp4";
 import image1 from "@/assets/image_1.jpg";
 import image2 from "@/assets/image_2.jpg";
 import image3 from "@/assets/image_3.jpg";
@@ -273,7 +273,7 @@ const SignUp = () => {
       
       <div className="flex w-full max-w-[1177px] flex-col md:flex-row items-stretch gap-8 lg:gap-[137px]">
         {/* Left side (for the form) */}
-        <div className="w-full md:max-w-[520px] bg-white rounded-[24px] border-[2px] border-[#D9D9D9] overflow-hidden">
+        <div className="w-full md:max-w-[470px] bg-white rounded-[24px] border-[2px] border-[#D9D9D9] overflow-hidden flex">
           {/* Logo area */}
           {/* <Link
             to="https://www.faishion.ai/"
@@ -443,14 +443,20 @@ const SignUp = () => {
         <div className="hidden md:flex flex-1 items-center justify-center">
   <div className="h-[547px] w-full max-w-[540px] rounded-[24px] bg-[#F7F7F7] flex items-center justify-center">
     {/* Inner white card */}
-    <div className="w-[260px] md:w-[280px] lg:w-[300px] aspect-[3/5] rounded-[32px] bg-black flex items-center justify-center">
+    <div className="w-full
+      max-w-[607px]
+      aspect-[607/777]
+      rounded-[24px]
+      bg-[#F7F7F7]
+      overflow-hidden
+      shadow-[0_4px_15px_rgba(0,0,0,0.25)]">
       <video
         src={signupVideo}
         autoPlay
         loop
         muted
         playsInline
-        className="h-full w-auto max-h-full rounded-[32px] object-contain"
+        className="h-full w-full object-cover"
       />
     </div>
   </div>

@@ -79,114 +79,101 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
       </div>
 
       {/* Main content */}
+            {/* Main content */}
       <div className="w-full px-4 md:px-12 lg:px-20 pb-12 pt-6">
-        
         <h1 className="text-[24px] md:text-[32px] font-bold text-[#000000] mb-6">
-          How to take the perfect photo
+          Upload Your Photo
         </h1>
 
-        {/* Video + requirements row */}
-        <div className="flex flex-col md:flex-row md:items-start gap-8 md:gap-[122px] mb-10">
-         
-          <div className="w-full max-w-[202px]">
-            
-           <video
-    src={uploadVideo}
-    autoPlay
-    loop
-    muted
-    playsInline
-    className="w-full h-full object-cover rounded-[12px]"
-  />
-          </div>
-
-          {/* Right: photo requirements */}
-          <div className="flex-1">
-            <h2 className="text-[24px] font-bold text-[#000000] mb-3">
-              Photo requirements
-            </h2>
-
-            <ul className="space-y-3">
-              {["Just You", "Fitted Clothes", "Full Body", "Max Size 10MB"].map(
-                (item) => (
-                  <li
-                    key={item}
-                    className="flex items-center gap-2 text-[16px] font-medium text-[#1E1E1E]"
-                  >
-                    <span
-                      className="inline-flex items-center justify-center rounded-full border-[2px] border-[#14AE5C] text-[#14AE5C]"
-                      style={{ width: "19px", height: "19px" }}
-                    >
-                      ✓
-                    </span>
-                    {item}
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-        </div>
-
-        
-        <h2 className="text-[24px] font-bold text-[#000000] mb-4">
-          Upload Your Photo
-        </h2>
-
-        {/* Drag & drop area */}
-        <div className="w-full">
+        {/* Sample photo + drag & drop row */}
+        <div className="w-full flex justify-center">
           <div
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            className="mx-auto w-full max-w-[1040px] min-h-[260px] md:min-h-[315px] bg-white
-           rounded-[32px] flex flex-col items-center justify-center px-4 py-8 md:px-10 md:py-10"
-style={{
-  border: "3px dashed #DADADA",
-  borderRadius: "32px",
-  borderSpacing: "11px",
-  strokeDasharray: "5,5"
-}}
+            className="
+              w-full max-w-[1116px]
+              flex flex-col md:flex-row
+              items-stretch
+              gap-8 lg:gap-[70px]
+            "
           >
-            {/* Upload icon circle */}
-            <div className="mb-4 flex items-center justify-center">
-              <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-[#EFE6FF]">
-                <span className="text-2xl text-[#6A5ACD]">⬆️</span>
+            {/* Left: sample video */}
+            <div className="w-full md:w-auto flex justify-center">
+              <div
+                className="
+                  w-[220px] sm:w-[260px] md:w-[280px] lg:w-[300px]
+                  h-[260px] sm:h-[360px] md:h-[460px] lg:h-[546px]
+                  rounded-[24px] overflow-hidden
+                  border-[4px] border-[#6A5ACD]
+                "
+              >
+                <video
+                  src={uploadVideo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
 
-            {/* Drag and drop text */}
-            <p className="text-[18px] md:text-[20px] font-bold text-[#000000] leading-[24px] mb-1 text-center">
-              Drag and drop
-            </p>
-            <p className="text-[14px] md:text-[16px] font-medium text-[#000000] leading-[24px] mb-4 text-center">
-              or browse for photos
-            </p>
+            {/* Right: drag & drop area */}
+            <div className="flex-1 flex items-center">
+              <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className="
+                  w-full
+                  h-[260px] sm:h-[360px] md:h-[460px] lg:h-[546px]
+                  rounded-[46px]
+                  bg-[#F7F7F7]
+                  flex flex-col items-center justify-center
+                  px-6 sm:px-10 lg:px-14
+                  py-6 sm:py-10 lg:py-14
+                "
+                style={{ border: "3px dashed #DADADA", borderRadius: "46px" }}
+              >
+                {/* Upload icon circle */}
+                <div className="mb-4 flex items-center justify-center">
+                  <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-[#EFE6FF]">
+                    <span className="text-2xl text-[#6A5ACD]">⬆️</span>
+                  </div>
+                </div>
 
-            {/* Browse button */}
-            <button
-              type="button"
-              onClick={handleBrowseClick}
-              className="inline-flex items-center justify-center rounded-[16px] bg-[#6A5ACD] px-6 py-1.5 text-[15px] font-bold text-white"
-              style={{ minWidth: "105px", minHeight: "29px" }}
-            >
-              Browse
-            </button>
+                {/* Drag and drop text */}
+                <p className="text-[18px] md:text-[20px] font-bold text-[#000000] leading-[24px] mb-1 text-center">
+                  Drag and drop
+                </p>
+                <p className="text-[14px] md:text-[16px] font-medium text-[#000000] leading-[24px] mb-4 text-center">
+                  or browse for photos
+                </p>
 
-    
-            {fileName && (
-              <p className="mt-3 text-xs text-gray-500 text-center">
-                Selected: {fileName}
-              </p>
-            )}
+                {/* Browse button */}
+                <button
+                  type="button"
+                  onClick={handleBrowseClick}
+                  className="inline-flex items-center justify-center rounded-[16px] bg-[#6A5ACD] px-6 py-1.5 text-[15px] font-bold text-white"
+                  style={{ minWidth: "105px", minHeight: "29px" }}
+                >
+                  Browse
+                </button>
 
-            {/* Hidden file input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-            />
+                {fileName && (
+                  <p className="mt-3 text-xs text-gray-500 text-center">
+                    Selected: {fileName}
+                  </p>
+                )}
+
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
