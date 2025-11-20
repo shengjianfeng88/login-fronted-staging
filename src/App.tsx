@@ -25,6 +25,7 @@ import Register from './pages/Register';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionCancel from './pages/SubscriptionCancel';
 import ConfirmSignup from './pages/ConfirmSignup';
+import Newtryon from './components/history/Newtryon';
 console.log('environment', 'staging.......,,..');
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
               <Route path='/forgot-password' element={<ForgotPassword />} />
               <Route path='/reset-password' element={<ResetPassword />} />
               <Route path='/tryon-history' element={<History />} />
+              <Route path='/new-tryon' element={<Newtryon />} />
               <Route path='/tryon-history/favorites' element={<FavoritesPage />} />
               <Route path='/verify-email' element={<VerifyEmail />} />
               <Route path='*' element={<PageNotFound />} />
