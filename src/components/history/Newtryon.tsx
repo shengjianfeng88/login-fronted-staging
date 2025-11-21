@@ -38,12 +38,39 @@ const OptimizedImage: React.FC<{
   />
 );
 
+const CURRENCY_SYMBOL: Record<string, string> = {
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+};
+
+const formatMoney = (price?: string, currency?: string) => {
+  if (!price) return '';
+  const num = Number(price);
+  if (Number.isNaN(num)) return price;
+
+  const code = currency || 'USD';
+  const symbol = CURRENCY_SYMBOL[code] ?? '';
+  // simple formatting so it’s cheap + predictable
+  return `${symbol}${num.toFixed(2).replace(/\.00$/, '')}`;
+};
+
+const calculateDiscount = (newPrice?: string, ogPrice?: string | null) => {
+  if (!newPrice || !ogPrice) return null;
+  const n = Number(newPrice);
+  const o = Number(ogPrice);
+  if (!o || Number.isNaN(n) || Number.isNaN(o) || n >= o) return null;
+  return Math.round(((o - n) / o) * 100); // percentage
+};
+
 interface ProductCardProps {
   image: string;
   name: string;
   brand?: string;
-  price?: string;
+  newPrice?: string;
+  ogPrice?: string | null;
   currency?: string;
+  isOnSale?: boolean;
   isFavorite?: boolean;
   onToggleFavorite?: () => void | Promise<void>;
 }
@@ -52,56 +79,82 @@ const ProductCard: React.FC<ProductCardProps> = ({
   image,
   name,
   brand,
-  price,
+  newPrice,
+  ogPrice,
   currency,
+  isOnSale,
   isFavorite = false,
   onToggleFavorite,
-}) => (
-  <div className="relative bg-white overflow-hidden shadow-lg hover:shadow-xl transition cursor-pointer flex flex-col h-full rounded-2xl">
-    {/* Image section */}
-    <div className="w-full h-72 bg-white flex items-center justify-center">
-      <OptimizedImage src={image} alt={name} className="h-full object-contain" />
-    </div>
+}) => {
+  const discount = isOnSale ? calculateDiscount(newPrice, ogPrice) : null;
+  const displayNew = formatMoney(newPrice, currency);
+  const displayOld = ogPrice ? formatMoney(ogPrice, currency) : '';
 
-    {/* Text section */}
-    <div className="p-4 flex flex-col justify-between flex-grow">
-      <div className="flex items-center justify-between mb-1">
-        {/* Brand (optional – will be mostly empty for now) */}
-        <p className="text-gray-500 text-xs uppercase tracking-wide font-medium">
-          {brand || ''}
-        </p>
+return  (
 
-        {/* Favorite button (hook up later if you want) */}
-        <div
-          onClick={async (e) => {
-            e.stopPropagation();
-            await onToggleFavorite?.();
-          }}
-          className="cursor-pointer p-1 rounded-full"
-        >
-          <Heart
-            className={`w-5 h-5 ${
-              isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
-            }`}
-          />
-        </div>
+   <div className="relative bg-white overflow-hidden shadow-lg hover:shadow-xl transition cursor-pointer flex flex-col h-full rounded-2xl">
+      {/* Image */}
+      <div className="w-full h-72 bg-white flex items-center justify-center">
+        <OptimizedImage
+          src={image}
+          alt={name}
+          className="h-full w-full object-contain"
+        />
       </div>
 
-      {/* Name (main thing we show now) */}
-      <p className="text-lg font-semibold text-gray-900 truncate">{name}</p>
+      {/* Info */}
+      <div className="p-4 flex flex-col justify-between flex-grow">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide font-medium line-clamp-1">
+            {brand || ''}
+          </p>
 
-      {/* Price row – will be empty until we hook it up */}
-      {(price || currency) && (
-        <div className="flex items-center gap-2 mt-2">
-          <span className="text-lg font-bold text-black">
-            {currency}
-            {price}
-          </span>
+          {/* Favorite */}
+          <button
+            type="button"
+            onClick={async (e) => {
+              e.stopPropagation();
+              await onToggleFavorite?.();
+            }}
+            className="cursor-pointer p-1 rounded-full"
+          >
+            <Heart
+              className={`w-5 h-5 ${
+                isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
+              }`}
+            />
+          </button>
         </div>
-      )}
+
+        {/* Name */}
+        <p className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 truncate">
+          {name}
+        </p>
+
+        {/* Prices + badge */}
+        <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mt-2">
+          {displayNew && (
+            <span className="text-sm sm:text-base font-bold text-black">
+              {displayNew}
+            </span>
+          )}
+
+          {displayOld && (
+            <span className="text-xs sm:text-sm text-gray-400 line-through">
+              {displayOld}
+            </span>
+          )}
+
+          {discount !== null && (
+            <span className="text-[10px] sm:text-xs font-semibold text-[#AF5500] bg-[#FFE7C2] px-2 py-0.5 rounded-full">
+              {discount}% OFF
+            </span>
+          )}
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ---------- Page Component ----------
 const Newtryon: React.FC = () => {
@@ -126,19 +179,21 @@ const Newtryon: React.FC = () => {
   }, []);
 
   return (
-    <section className="px-10 py-6 min-h-[calc(100vh-150px)] bg-gray-50 mx-auto rounded-md flex flex-col items-center gap-6">
+    <section className="px-4 sm:px-6 lg:px-10 py-6 min-h-[calc(100vh-150px)] bg-gray-50 mx-auto rounded-md flex flex-col items-center gap-6">
       <div className="max-w-[1280px] w-full">
         {loading ? (
           <div className="flex justify-center items-center mt-20">
             <div className="w-6 h-6 border-2 border-[#6C5DD3] border-t-transparent rounded-full animate-spin" />
-            <span className="ml-3 text-gray-600">Loading deals...</span>
+            <span className="ml-3 text-gray-600 text-sm sm:text-base">
+              Loading deals...
+            </span>
           </div>
         ) : products.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 mt-20">
             <p className="text-gray-600 text-sm">No products found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6 w-full">
             {products.map((p, idx) => (
               <div
                 key={`${p.url}-${idx}`}
@@ -151,11 +206,14 @@ const Newtryon: React.FC = () => {
                 <ProductCard
                   image={p.image}
                   name={p.name}
-                  brand={undefined}
-                  price={undefined }
-                  currency={undefined}
+                  brand={p.brand}
+                  newPrice={p.newPrice}
+                  ogPrice={p.ogPrice}
+                  currency={p.currency}
+                  isOnSale={p.isOnSale}
                   isFavorite={false}
                   onToggleFavorite={() => {
+                    // hook up favorites later if needed
                   }}
                 />
               </div>
