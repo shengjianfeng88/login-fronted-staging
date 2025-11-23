@@ -1221,7 +1221,7 @@ const FavoritesPage: React.FC = () => {
                       >
                         Shop Now
                       </a>
-                     {recLoading && (
+                     {/* {recLoading && (
   <div className="mt-6">
     <div className="w-6 h-6 border-2 border-[#6C5DD3] border-t-transparent rounded-full animate-spin"/>Loading Recommendations for You
       
@@ -1232,7 +1232,7 @@ const FavoritesPage: React.FC = () => {
 )}
 {!recLoading && !recError && recItems.length > 0 && (
   <RecommendedCarousel items={recItems} arrowColor="#675BC5" />
-)}
+)} */}
                     </div>
                   </div>
                 </div>
