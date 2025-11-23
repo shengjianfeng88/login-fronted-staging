@@ -52,7 +52,7 @@ const Auth = () => {
   console.log(user);
   const handleLogout = async () => {
     try {
-      const apiUrl = getApiUrl();
+      const apiUrl = getApiUrl("AUTH_API", "/auth/logout");
 
       await axios.get(`${apiUrl}/auth/logout`, { withCredentials: true });
 
