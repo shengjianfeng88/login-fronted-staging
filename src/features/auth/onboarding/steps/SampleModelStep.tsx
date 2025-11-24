@@ -34,17 +34,7 @@ export const SampleModelStep: React.FC<SampleModelStepProps> = ({ onBack,onNext 
       {/* Header */}
 <div className="w-full px-4 md:px-8 pt-8">
   <div className="flex items-center justify-between max-w-[1280px] mx-auto">
-    {/* Back */}
-    <button
-      type="button"
-      onClick={onBack}
-      className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100"
-    >
-      <span
-        aria-hidden
-        className="inline-block h-5 w-5 border-l-[3.5px] border-b-[3.5px] border-[#767676] rotate-45 translate-x-[1px]"
-      />
-    </button>
+  
 
     {/* Title + subtitle */}
     <div className="flex-1 flex flex-col items-center text-center">
@@ -61,19 +51,7 @@ export const SampleModelStep: React.FC<SampleModelStepProps> = ({ onBack,onNext 
       </p>
     </div>
 
-    {/* Next button (top-right) */}
-    <button
-      type="button"
-      onClick={onNext}
-      className="inline-flex items-center gap-1.5 rounded-full bg-[#2F2F2F] px-4 md:px-5 py-1.5
-                 text-xs md:text-sm font-semibold text-white shadow-sm hover:bg-black/80 transition-colors"
-    >
-      <span>Next</span>
-      <span
-        aria-hidden
-        className="inline-block h-2 w-2 border-r-[2px] border-b-[2px] border-white rotate-[-45deg] translate-y-[1px]"
-      />
-    </button>
+    
   </div>
 </div>
 

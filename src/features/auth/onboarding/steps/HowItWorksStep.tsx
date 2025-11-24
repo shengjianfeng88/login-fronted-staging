@@ -96,24 +96,9 @@ export const HowItWorksStep: React.FC<HowItWorksStepProps> = ({
       
         <header className="flex items-center justify-between px-4 md:px-8 pt-4 md:pt-5">
          
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100"
-          >
-            <span
-              aria-hidden
-              className="inline-block h-5 w-5 border-l-[3.5px] border-b-[3.5px] border-[#767676] rotate-45 translate-x-[1px]"
-            />
-          </button>
+         
 
-          <button
-            type="button"
-            onClick={onSkip}
-            className="text-xs md:text-sm font-medium text-[#6A7282] hover:text-gray-900"
-          >
-            Skip
-          </button>
+          
         </header>
 
         {/* Main title */}

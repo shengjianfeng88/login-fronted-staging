@@ -6,6 +6,13 @@ interface UploadPhotoStepProps {
   onNext: () => void;
 }
 
+const PHOTO_REQUIREMENTS = [
+  "Just You",
+  "Tight-fitting Clothes",
+  "Full Body",
+  "Max Size 10MB",
+];
+
 export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
   onBack,
   onNext,
@@ -49,89 +56,119 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
   };
 
   return (
-    <div className="flex flex-col w-full h-full">
-      {/* Top bar with back + next */}
-      <div className="flex items-center justify-between w-full px-4 md:px-8 pt-4">
-        {/* Back icon – rotated to match design */}
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center justify-center w-10 h-10"
-        >
-          <span
-            className=" block
-      w-[20px] h-[20px]
-      border-l-[3.5px] border-b-[3.5px]
-      border-[#767676]
-      rotate-[45deg]
-    "
-          />
-        </button>
+    <div className="flex flex-col w-full min-h-screen bg-white">
+      {/* Top bar */}
+    
 
-        <button
-          type="button"
-          onClick={onNext}
-          className="inline-flex items-center gap-2 rounded-full bg-[#2F2F2F] px-4 py-1.5 text-[13px] font-semibold text-white"
+      {/* Title (Inter Bold 32px, centered) */}
+      <div className="w-full px-4 md:px-12 lg:px-20 pt-0">
+        <h1
+          className="
+            text-center font-bold text-black
+            text-[24px] md:text-[32px]
+            leading-[1.0]
+          "
         >
-          Next
-          <span className="text-xs">➜</span>
-        </button>
+          Upload Your Photo
+        </h1>
       </div>
 
       {/* Main content */}
-            {/* Main content */}
-      <div className="w-full px-4 md:px-12 lg:px-20 pb-12 pt-6">
-        <h1 className="text-[24px] md:text-[32px] font-bold text-[#000000] mb-6">
-          Upload Your Photo
-        </h1>
+      <div className="w-full px-4 md:px-12 lg:px-20 pb-12 pt-8">
+        <div
+          className="
+            w-full max-w-[1116px] mx-auto
+            flex flex-col md:flex-row
+            items-start md:items-stretch
+            gap-8 lg:gap-[70px]
+          "
+        >
+          {/* Left: sample video (KEEP CSS SAME) */}
+          <div className="w-full md:w-auto flex justify-center md:justify-start">
+            <div
+              className="
+                w-[220px] sm:w-[260px] md:w-[280px] lg:w-[300px]
+                h-[260px] sm:h-[360px] md:h-[460px] lg:h-[546px]
+                rounded-[24px] overflow-hidden
+                border-[4px] border-[#6A5ACD]
+              "
+            >
+              <video
+                src={uploadVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
 
-        {/* Sample photo + drag & drop row */}
-        <div className="w-full flex justify-center">
-          <div
-            className="
-              w-full max-w-[1116px]
-              flex flex-col md:flex-row
-              items-stretch
-              gap-8 lg:gap-[70px]
-            "
-          >
-            {/* Left: sample video */}
-            <div className="w-full md:w-auto flex justify-center">
-              <div
+          {/* Right column */}
+          <div className="flex-1 w-full flex flex-col">
+            {/* Requirements (aligned to dropzone width) */}
+            <div className="max-w-[746px] w-full mb-4 md:mb-6">
+              <h2
                 className="
-                  w-[220px] sm:w-[260px] md:w-[280px] lg:w-[300px]
-                  h-[260px] sm:h-[360px] md:h-[460px] lg:h-[546px]
-                  rounded-[24px] overflow-hidden
-                  border-[4px] border-[#6A5ACD]
+                  font-bold text-black
+                  text-[20px] md:text-[24px]
+                  leading-[1.0]
+                  mb-4 md:mb-4
                 "
               >
-                <video
-                  src={uploadVideo}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
+                Photo requirements
+              </h2>
+
+              <div
+                className="
+                  flex flex-wrap items-center
+                  gap-x-[15px] gap-y-2
+                  text-[14px] md:text-[16px]
+                  font-medium
+                  text-[#1E1E1E]
+                  leading-[1.0]
+                "
+              >
+                {PHOTO_REQUIREMENTS.map((req) => (
+                  <div key={req} className="inline-flex items-center gap-2">
+                    <span
+                      className="
+                        inline-flex items-center justify-center
+                        w-[19px] h-[19px]
+                        rounded-full
+                        border-2 border-[#14AE5C]
+                        text-[#14AE5C]
+                        text-[12px] font-bold
+                        leading-none
+                      "
+                    >
+                      ✓
+                    </span>
+                    <span>{req}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Right: drag & drop area */}
-            <div className="flex-1 flex items-center">
+            <div className="w-full flex-1 flex items-start md:items-center">
               <div
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
-                className="
-                  w-full
-                  h-[260px] sm:h-[360px] md:h-[460px] lg:h-[546px]
+                className={`
+                  w-full max-w-[746px]
+                  h-[260px] sm:h-[360px] md:h-[440px] lg:h-[440px]
                   rounded-[46px]
-                  bg-[#F7F7F7]
                   flex flex-col items-center justify-center
                   px-6 sm:px-10 lg:px-14
                   py-6 sm:py-10 lg:py-14
-                "
-                style={{ border: "3px dashed #DADADA", borderRadius: "46px" }}
+                  transition-colors
+                  ${isDragging ? "bg-[#EFE6FF]" : "bg-[#F7F7F7]"}
+                `}
+                style={{
+                  border: `3px dashed ${isDragging ? "#6A5ACD" : "#DADADA"}`,
+                  borderRadius: "46px",
+                }}
               >
                 {/* Upload icon circle */}
                 <div className="mb-4 flex items-center justify-center">
@@ -140,19 +177,21 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
                   </div>
                 </div>
 
-                {/* Drag and drop text */}
-                <p className="text-[18px] md:text-[20px] font-bold text-[#000000] leading-[24px] mb-1 text-center">
+                <p className="text-[18px] md:text-[20px] font-bold text-black leading-[24px] mb-1 text-center">
                   Drag and drop
                 </p>
-                <p className="text-[14px] md:text-[16px] font-medium text-[#000000] leading-[24px] mb-4 text-center">
+                <p className="text-[14px] md:text-[16px] font-medium text-black leading-[24px] mb-4 text-center">
                   or browse for photos
                 </p>
 
-                {/* Browse button */}
                 <button
                   type="button"
                   onClick={handleBrowseClick}
-                  className="inline-flex items-center justify-center rounded-[16px] bg-[#6A5ACD] px-6 py-1.5 text-[15px] font-bold text-white"
+                  className="
+                    inline-flex items-center justify-center
+                    rounded-[16px] bg-[#6A5ACD]
+                    px-6 py-1.5 text-[15px] font-bold text-white
+                  "
                   style={{ minWidth: "105px", minHeight: "29px" }}
                 >
                   Browse
