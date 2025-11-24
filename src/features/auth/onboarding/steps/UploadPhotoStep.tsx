@@ -1,9 +1,11 @@
 import React, { useCallback, useRef, useState } from "react";
-import uploadVideo from "@/assets/onboarding/19700121_0145_6916f2cc71d08191a4c746c00d27fb1b.mp4";
+import uploadVideo from "@/assets/onboarding/Upload-Image-Tutorial.mp4";
+import checkcircle from "@/assets/onboarding/Check circle.png"
+import uploadimage from "@/assets/onboarding/Upload-Sign.png"
 
 interface UploadPhotoStepProps {
-  onBack: () => void;
-  onNext: () => void;
+  onBack?: () => void;
+  onNext?: () => void;
 }
 
 const PHOTO_REQUIREMENTS = [
@@ -13,10 +15,7 @@ const PHOTO_REQUIREMENTS = [
   "Max Size 10MB",
 ];
 
-export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
-  onBack,
-  onNext,
-}) => {
+export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -29,7 +28,6 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
     if (!files || !files.length) return;
     const file = files[0];
     setFileName(file.name);
-    // TODO: hook this into your actual upload / pipeline
   }, []);
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -58,9 +56,6 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
   return (
     <div className="flex flex-col w-full min-h-screen bg-white">
       {/* Top bar */}
-    
-
-      {/* Title (Inter Bold 32px, centered) */}
       <div className="w-full px-4 md:px-12 lg:px-20 pt-0">
         <h1
           className="
@@ -83,7 +78,6 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
             gap-8 lg:gap-[70px]
           "
         >
-          {/* Left: sample video (KEEP CSS SAME) */}
           <div className="w-full md:w-auto flex justify-center md:justify-start">
             <div
               className="
@@ -106,7 +100,6 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
 
           {/* Right column */}
           <div className="flex-1 w-full flex flex-col">
-            {/* Requirements (aligned to dropzone width) */}
             <div className="max-w-[746px] w-full mb-4 md:mb-6">
               <h2
                 className="
@@ -131,19 +124,12 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
               >
                 {PHOTO_REQUIREMENTS.map((req) => (
                   <div key={req} className="inline-flex items-center gap-2">
-                    <span
-                      className="
-                        inline-flex items-center justify-center
-                        w-[19px] h-[19px]
-                        rounded-full
-                        border-2 border-[#14AE5C]
-                        text-[#14AE5C]
-                        text-[12px] font-bold
-                        leading-none
-                      "
-                    >
-                      ✓
-                    </span>
+                     <img
+    src={checkcircle}
+    alt="check"
+    className="w-[19px] h-[19px] object-contain"
+    draggable={false}
+  />
                     <span>{req}</span>
                   </div>
                 ))}
@@ -173,7 +159,7 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = ({
                 {/* Upload icon circle */}
                 <div className="mb-4 flex items-center justify-center">
                   <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-[#EFE6FF]">
-                    <span className="text-2xl text-[#6A5ACD]">⬆️</span>
+                    <img src={uploadimage} alt="Upload Image"/>
                   </div>
                 </div>
 

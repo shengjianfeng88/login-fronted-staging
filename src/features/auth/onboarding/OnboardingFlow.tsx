@@ -1,5 +1,4 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo, useEffect } from "react";
 import { OnboardingHeader } from "./OnboardingTopBar";
 import { PinToolbarStep } from "./steps/PinToolbarStep";
 import { ChooseViewerStep } from "./steps/ChooseViewerStep";
@@ -29,15 +28,14 @@ const STEP_ORDER: Step[] = [
   "chooseViewer",
   "sampleModel",
   "uploadOwnPhoto",
-  "howItWorks",          
-  "SizeHowItWorksStep",  
+  "howItWorks",
+  "SizeHowItWorksStep",
   "chatbot",
-  "AllinOnePlaceProps",  
-  "ShortcutProps",  
-  "DoneStep"     
+  "AllinOnePlaceProps",
+  "ShortcutProps",
+  "DoneStep",
 ];
 
-// only these steps show back/next under progress bar
 const STEPS_WITH_CONTROLS = new Set<Step>([
   "sampleModel",
   "uploadOwnPhoto",
@@ -46,27 +44,23 @@ const STEPS_WITH_CONTROLS = new Set<Step>([
   "chatbot",
   "AllinOnePlaceProps",
   "ShortcutProps",
-  "DoneStepProps",
+  "DoneStep",
 ]);
 
 export const OnboardingFlow: React.FC = () => {
   const [step, setStep] = useState<Step>("pinToolbar");
-  const navigate = useNavigate();
+  const [skipReady, setSkipReady] = useState(false);
+  const goDoneStep = () => setStep("DoneStep");
 
-  const goDone = () => navigate("/done");
-
-  const stepIndex = useMemo(
-    () => STEP_ORDER.indexOf(step),
-    [step]
-  );
-  const progress =
-    stepIndex <= 0 ? 0 : stepIndex / (STEP_ORDER.length - 1);
-
+  const stepIndex = useMemo(() => STEP_ORDER.indexOf(step), [step]);
+  const progress = stepIndex <= 0 ? 0 : stepIndex / (STEP_ORDER.length - 1);
   const showControls = STEPS_WITH_CONTROLS.has(step);
 
-  // define default back/next for controls row
+   useEffect(() => {
+    setSkipReady(false);
+  }, [step]);
+
   const backHandler = () => {
-    // custom backs for branching steps
     switch (step) {
       case "sampleModel":
       case "uploadOwnPhoto":
@@ -82,7 +76,7 @@ export const OnboardingFlow: React.FC = () => {
       case "ShortcutProps":
         return setStep("AllinOnePlaceProps");
       case "DoneStep":
-        return setStep("DoneStep");
+        return setStep("ShortcutProps");
       default:
         return;
     }
@@ -104,23 +98,30 @@ export const OnboardingFlow: React.FC = () => {
       case "ShortcutProps":
         return setStep("DoneStep");
       case "DoneStep":
-        return goDone();
+        return goDoneStep();
       default:
         return;
     }
   };
 
+  const isSkipStep =
+    step === "howItWorks" || step === "SizeHowItWorksStep";
+
+  const headerNextLabel =
+  isSkipStep && !skipReady ? "Skip" : "Next";
+  const headerNextHandler =
+  step === "DoneStep" ? undefined : nextHandler;
+
   return (
     <main className="min-h-screen bg-white">
-      {/* NAVBAR + PROGRESS + OPTIONAL CONTROLS */}
       <OnboardingHeader
         progress={progress}
         showControls={showControls}
         onBack={backHandler}
-        onNext={nextHandler}
+        onNext={headerNextHandler}
+        nextLabel={headerNextLabel}
       />
 
-      {/* CONTENT */}
       <section className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-10">
         <div className="w-full max-w-[1280px] transition-all duration-300">
           {step === "pinToolbar" && (
@@ -151,16 +152,22 @@ export const OnboardingFlow: React.FC = () => {
           {step === "howItWorks" && (
             <HowItWorksStep
               onBack={() => setStep("chooseViewer")}
-              onSkip={goDone}
+              onSkip={() => setStep("SizeHowItWorksStep")}                
               onNext={() => setStep("SizeHowItWorksStep")}
+              onReachBottom={(atBottom) => {
+      if (atBottom) setSkipReady(true);
+    }}
             />
           )}
 
           {step === "SizeHowItWorksStep" && (
             <SizeHowItWorksStep
               onBack={() => setStep("howItWorks")}
-              onSkip={goDone}
+              onSkip={() => setStep("chatbot")}                 
               onNext={() => setStep("chatbot")}
+              onReachBottom={(atBottom) => {
+      if (atBottom) setSkipReady(true); 
+    }}
             />
           )}
 
@@ -186,9 +193,7 @@ export const OnboardingFlow: React.FC = () => {
           )}
 
           {step === "DoneStep" && (
-            <DoneStep
-              onBack={() => setStep("ShortcutProps")}
-            />
+            <DoneStep onBack={() => setStep("ShortcutProps")} />
           )}
         </div>
       </section>

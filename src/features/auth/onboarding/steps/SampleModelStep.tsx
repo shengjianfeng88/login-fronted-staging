@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import img1 from "../../../../assets/onboarding/9eb5fa570aaeb5b48308abd2f7852bca821aa2d7.png";
-import img2 from "../../../../assets/onboarding/e48fee89a7f9d321b7eccde5e50949c5eefefbb9.png";
-import img3 from "../../../../assets/onboarding/4fb231c101520b589dd8a6a9ddbdbfaeb0511121.png";
-import img4 from "../../../../assets/onboarding/4f4f4fb229ebea5703dc10cff3eb4d51ad8b6c17.png";
-import img5 from "../../../../assets/onboarding/89eb2bf04f8e19a3a5bd3e01c2fcc776ac261867.png";
-import img6 from "../../../../assets/onboarding/b81268bdbdec78b91d74e738e59edcb7fce6df73.png";
+import img1 from "../../../../assets/onboarding/Sample-Modal-1.png";
+import img2 from "../../../../assets/onboarding/Sample-Modal-2.png";
+import img3 from "../../../../assets/onboarding/Sample-Modal-3.png";
+import img4 from "../../../../assets/onboarding/Sample-Modal-4.png";
+import img5 from "../../../../assets/onboarding/Sample-Modal-5.png";
+import img6 from "../../../../assets/onboarding/Sample-Modal-6.png";
 
 
 interface SampleModelStepProps {
-  onBack: () => void;
+  onBack?: () => void;
   onNext?: () => void;
 }
 
@@ -21,7 +21,7 @@ const SAMPLE_MODELS = [
   { id: 6, src: img6, alt: "Athletic model in leggings" },
 ];
 
-export const SampleModelStep: React.FC<SampleModelStepProps> = ({ onBack,onNext }) => {
+export const SampleModelStep: React.FC<SampleModelStepProps> = () => {
   const [selectedId, setSelectedId] = useState<number | null>(SAMPLE_MODELS[0]?.id ?? null);
 
   const handleSelect = (id: number) => {
@@ -67,29 +67,36 @@ export const SampleModelStep: React.FC<SampleModelStepProps> = ({ onBack,onNext 
       md:flex-nowrap md:justify-center
           "
         >
-          {SAMPLE_MODELS.map((model) => (
-            <button
-              key={model.id}
-              type="button"
-              onClick={() => handleSelect(model.id)}
-              className="
-                 relative
-          w-[45%]
-          max-w-[190px]
-          aspect-[190/308]
-          bg-white
-          transition-all duration-200
-          focus:outline-none
-          md:w-[190px] md:h-[308px] md:aspect-auto
-              "
-            >
-              <img
-                src={model.src}
-                alt={model.alt}
-                className="w-full h-full object-cover"
-              />
-            </button>
-          ))}
+          {SAMPLE_MODELS.map((model) => {
+  const isSelected = selectedId === model.id;
+
+  return (
+    <button
+      key={model.id}
+      type="button"
+      onClick={() => handleSelect(model.id)}
+      className={`
+        relative
+        w-[45%]
+        max-w-[190px]
+        aspect-[190/308]
+        bg-white
+        transition-all duration-200
+        focus:outline-none
+        md:w-[190px] md:h-[308px] md:aspect-auto
+        rounded-[6px] overflow-hidden
+        ${isSelected ? "ring-4 ring-[#6A5ACD]" : "ring-0"}
+      `}
+    >
+      <img
+        src={model.src}
+        alt={model.alt}
+        className="w-full h-full object-cover"
+      />
+    </button>
+  );
+})}
+
         </div>
       </div>
     </div>

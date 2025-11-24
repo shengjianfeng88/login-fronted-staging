@@ -14,11 +14,12 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { sendMessageToExtension } from "@/utils/utils";
 import { setUser } from "@/store/features/userSlice";
-import signupVideo from "@/assets/onboarding/01e8f33d7c22ebfd0103700399fef54dcb_4610.mp4video.mp4";
+import signupVideo from "@/assets/onboarding/Signup-Video.mp4";
 import image1 from "@/assets/image_1.jpg";
 import image2 from "@/assets/image_2.jpg";
 import image3 from "@/assets/image_3.jpg";
 import googleLogo from "@/assets/g-logo.png";
+import { OnboardingHeader } from "@/features/auth/onboarding/OnboardingTopBar";
 
 //This user schema does not include the confimPassword, I stick to the original userSchema
 // const signUpSchema = z.object({
@@ -269,6 +270,8 @@ const SignUp = () => {
 
 
   return (
+    <>
+  <OnboardingHeader/>
     <main className="min-h-screen flex items-center justify-center px-4">
       
       <div className="flex w-full max-w-[1177px] flex-col md:flex-row items-stretch gap-8 lg:gap-[137px]">
@@ -463,6 +466,7 @@ const SignUp = () => {
 </div>
       </div>
     </main>
+      </>
   );
 };
 

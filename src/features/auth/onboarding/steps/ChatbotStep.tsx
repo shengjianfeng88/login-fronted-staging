@@ -1,5 +1,5 @@
 import React from "react";
-import chatbotVideo from "@/assets/onboarding/Screen Recording 2025-11-13 at 10.21.49 PM.mp4";
+import chatbotVideo from "@/assets/onboarding/Chatbot-Video.mp4";
 
 interface ChatbotStepProps {
   onBack: () => void;

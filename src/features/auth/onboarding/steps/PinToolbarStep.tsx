@@ -1,6 +1,6 @@
 // src/features/auth/onboarding/steps/PinToolbarStep.tsx
 import React from "react";
-import pinToolbarVideo from "@/assets/onboarding/chrome.jitter.mp4";
+import pinToolbarVideo from "@/assets/onboarding/PinToolbarStep.mp4";
 
 interface PinToolbarStepProps {
   onNext: () => void;

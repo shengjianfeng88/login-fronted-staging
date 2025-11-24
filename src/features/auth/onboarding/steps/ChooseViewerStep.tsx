@@ -1,5 +1,7 @@
-// src/features/auth/onboarding/steps/ChooseViewerStep.tsx
 import React from "react";
+import uploadimage from "@/assets/onboarding/UseYourOwnPhotoImage.png"
+import usesample from "@/assets/onboarding/UseYourOwnSampleImage.png"
+
 
 interface ChooseViewerStepProps {
   onSelectOwnPhoto: () => void;
@@ -54,11 +56,9 @@ export const ChooseViewerStep: React.FC<ChooseViewerStepProps> = ({
             px-6 md:px-8
           "
         >
-          {/* Icon circle */}
           <div className="mb-6 flex items-center justify-center">
             <div className="flex w-[100px] h-[100px] items-center justify-center rounded-full bg-[#EEEAFE]">
-              {/* Replace with your real icon */}
-              <span className="text-3xl text-[#6A5ACD]">🖼️</span>
+              <span className="text-3xl text-[#6A5ACD]"><img src={uploadimage} alt="Image Upload"/> </span>
             </div>
           </div>
 
@@ -74,7 +74,6 @@ export const ChooseViewerStep: React.FC<ChooseViewerStepProps> = ({
           </p>
         </button>
 
-        {/* Card 2: Use a sample model (388 x 413) */}
         <button
           type="button"
           onClick={handleSample}
@@ -91,8 +90,8 @@ export const ChooseViewerStep: React.FC<ChooseViewerStepProps> = ({
           {/* Icon circle */}
           <div className="mb-6 flex items-center justify-center">
             <div className="flex w-[100px] h-[100px] items-center justify-center rounded-full bg-[#EEEAFE]">
-              {/* Replace with your real icon */}
-              <span className="text-3xl text-[#6A5ACD]">👥</span>
+             
+              <span className="text-3xl text-[#6A5ACD]"><img src={usesample} alt="Try-on Sample"/> </span>
             </div>
           </div>
 

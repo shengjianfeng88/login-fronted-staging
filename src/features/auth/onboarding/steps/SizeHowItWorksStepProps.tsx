@@ -1,15 +1,15 @@
-import React from "react";
-// TODO: replace these with real video/image imports when ready
-import step1Media from "@/assets/onboarding/Screen Recording 2025-11-13 at 9.14.55 PM.mp4";
-import step2Media from "@/assets/onboarding/Screen Recording 2025-11-13 at 9.21.26 PM.mp4";
-import step3Media from "@/assets/onboarding/Screen Recording 2025-11-13 at 9.28.18 PM.mp4";
-import step4Media from "@/assets/onboarding/Screen Recording 2025-11-13 at 9.32.23 PM.mp4";
-import step5Media from "@/assets/onboarding/Screen Recording 2025-11-13 at 9.36.09 PM.mp4";
-import step6Media from "@/assets/onboarding/Screen Recording 2025-11-13 at 9.39.17 PM.mp4";
+import React, { useEffect, useRef } from "react";
+import step1Media from "@/assets/onboarding/Size-Recommendation-Step1.mp4";
+import step2Media from "@/assets/onboarding/Size-Recommendation-Step2.mp4";
+import step3Media from "@/assets/onboarding/Size-Recommendation-Step3.mp4";
+import step4Media from "@/assets/onboarding/Size-Recommendation-Step4.mp4";
+import step6Media from "@/assets/onboarding/Size-Recommendation-Step5.mp4";
 
 interface SizeHowItWorksStepProps {
-  onBack: () => void;
-  onEndChange?: (atEnd: boolean) => void;
+  onBack?: () => void;
+ onNext?: () => void;
+  onSkip?:()=>void; 
+  onReachBottom?: (atBottom: boolean) => void;
 }
 
 const SIZE_STEPS = [
@@ -45,18 +45,45 @@ const SIZE_STEPS = [
     id: 5,
     title: "5. Your recommended size is ready",
     body:
-      "You’re all set! Your recommended size is \nhighlighted, along with options if you prefer a \nsnug or relaxed fit",
+      "You're all set! Your recommended size is \nhighlighted, along with options if you prefer a \nsnug or relaxed fit",
     media: step6Media,
   },
 ];
 
 export const SizeHowItWorksStep: React.FC<SizeHowItWorksStepProps> = ({
-  onBack,
-  onSkip,
   onNext,
+  onReachBottom,
 }) => {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+   useEffect(() => {
+      if (!onReachBottom) return;
+  
+      const checkBottom = () => {
+        const el = rootRef.current;
+        if (!el) return;
+  
+        const rect = el.getBoundingClientRect();
+        const thresholdPx = 8; // small tolerance
+  
+        // if bottom of this step is within viewport bottom => at bottom
+        const atBottom = rect.bottom <= window.innerHeight + thresholdPx;
+        onReachBottom(atBottom);
+      };
+  
+      checkBottom(); // initial
+      window.addEventListener("scroll", checkBottom, { passive: true });
+      window.addEventListener("resize", checkBottom);
+  
+      return () => {
+        window.removeEventListener("scroll", checkBottom);
+        window.removeEventListener("resize", checkBottom);
+      };
+    }, [onReachBottom]);
+  
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div ref={rootRef} className="flex flex-col min-h-screen">
       {/* Top bar */}
      
 
@@ -113,21 +140,7 @@ export const SizeHowItWorksStep: React.FC<SizeHowItWorksStepProps> = ({
           })}
         </div>
       </main>
-      <footer className="flex justify-end px-4 md:px-8 pb-6 md:pb-8">
-  <button
-    type="button"
-    onClick={onNext}
-    className="
-     inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#6A5ACD] to-[#8E7BFF] px-6 md:px-7 py-2 md:py-2.5 text-[13px] md:text-[15px] font-semibold text-white shadow-sm hover:opacity-90 transition-opacity"
-  >
-    <span>Next</span>
-     <span
-      aria-hidden
-      className="inline-block h-2 w-2 border-r-[2px] border-b-[2px] border-white rotate-[-45deg] translate-y-[1px]"
-    />
-
-  </button>
-</footer>
+      
 
     </div>
   );

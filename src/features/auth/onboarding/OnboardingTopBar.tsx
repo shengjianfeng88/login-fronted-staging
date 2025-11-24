@@ -1,5 +1,5 @@
 import React from "react";
-
+import imglogo from "@/assets/onboarding/fAIshion-logo.png"
 
 interface OnboardingHeaderProps {
   /** show the top brand navbar */
@@ -29,7 +29,7 @@ export const OnboardingHeader: React.FC<OnboardingHeaderProps> = ({
   const pct = Math.min(1, Math.max(0, progress)) * 100;
 
   return (
-    <div className="w-full sticky top-0 z-50 bg-white">
+    <div className="w-full sticky top-0 z-50">
       {/* Navbar row (height ~60px) */}
       {showNavbar && (
         <header
@@ -42,9 +42,19 @@ export const OnboardingHeader: React.FC<OnboardingHeaderProps> = ({
             bg-white
           "
         >
-          <div className="text-[14px] md:text-[16px] font-semibold text-black">
-            fAIshion.AI
-          </div>
+          <div className="flex items-center">
+  <img
+    src={imglogo}
+    alt="fAIshion.ai"
+    className="
+      h-[28px] md:h-[32px]
+      w-auto
+      object-contain
+      select-none
+    "
+    draggable={false}
+  />
+</div>
           {rightSlot ? rightSlot : <div className="w-6" />}
         </header>
       )}
@@ -77,25 +87,43 @@ export const OnboardingHeader: React.FC<OnboardingHeaderProps> = ({
             </button>
 
             {/* Next pill */}
-            <button
-              type="button"
-              onClick={onNext}
-              className="
-                inline-flex items-center gap-2
-                rounded-full bg-[#111111]
-                px-3 py-1
-                text-[12px] md:text-[13px]
-                font-semibold text-white
-                shadow-sm hover:bg-black/80
-                transition-colors
-              "
-            >
-              {nextLabel}
-              <span
-                aria-hidden
-                className="inline-block h-2 w-2 border-r-[2px] border-b-[2px] border-white rotate-[-45deg] translate-y-[1px]"
-              />
-            </button>
+            {onNext && (
+  nextLabel.toLowerCase() === "skip" ? (
+  
+    <button
+      type="button"
+      onClick={onNext}
+      className="
+        text-[#767676]
+        text-[18px] md:text-[20px]
+        font-medium
+      "
+    >
+      Skip
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={onNext}
+      className="
+        inline-flex items-center gap-2
+        h-8
+        rounded-[10px] bg-[#2C2C2C]
+        px-3
+        text-[12px] md:text-[13px]
+        font-semibold text-white
+        shadow-sm hover:bg-black/80
+        transition-colors
+      "
+    >
+      {nextLabel}
+      <span
+        aria-hidden
+        className="inline-block h-2 w-2 border-r-[2px] border-b-[2px] border-white rotate-[-45deg] translate-y-[1px]"
+      />
+    </button>
+  )
+)}
           </div>
         </div>
       )}

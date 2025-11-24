@@ -1,19 +1,24 @@
 import React from "react";
 import Slider from "react-infinite-logo-slider";
-import nike from "@/assets/fAIshion_logo.avif";
-import fendi from "@/assets/fAIshion_logo.avif";
-import tommy from "@/assets/fAIshion_logo.avif";
-import burberry from "@/assets/fAIshion_logo.avif";
-import zara from "@/assets/fAIshion_logo.avif";
-import uniqlo from "@/assets/fAIshion_logo.avif";
-import ralph from "@/assets/fAIshion_logo.avif";
-import chanel from "@/assets/fAIshion_logo.avif";
-import levis from "@/assets/fAIshion_logo.avif";
-import gap from "@/assets/fAIshion_logo.avif";
+import nike from "@/assets/onboarding/Nike-Logo.png";
+import fendi from "@/assets/onboarding/Fendi-Logo.png";
+import tommy from "@/assets/onboarding/Tommy-Logo.png";
+import burberry from "@/assets/onboarding/Burberry-Logo.jpg";
+import zara from "@/assets/onboarding/Zara-Logo.png";
+import uniqlo from "@/assets/onboarding/Uniqlo-Logo.png";
+import ralph from "@/assets/onboarding/Ralph-Logo.png";
+import chanel from "@/assets/onboarding/Chanel-Logo.png";
+import levis from "@/assets/onboarding/Levis-Logo.png";
+import gap from "@/assets/onboarding/Gap-Logo.png";
+import googleicon from "@/assets/onboarding/Google-Icon.png"
 
 interface DoneStepProps {
   onBack: () => void; 
 }
+
+const handleSearchBrands = () => {
+  window.open("https://www.google.com/", "_blank");
+};
 
 const BRANDS = [
   { id: "nike", src: nike, alt: "Nike" },
@@ -34,26 +39,33 @@ export const DoneStep: React.FC<DoneStepProps> = () => {
      
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 md:px-8 py-10 md:py-14">
-        <div className="w-full max-w-[1100px] mb-10 md:mb-14">
-          <div className="[transform:scaleX(-1)]">
-          <Slider
-            duration={35}         
-            pauseOnHover={false}
-            blurBorders={false}
-          >
-            {BRANDS.map((b) => (
-              <Slider.Slide key={`top-${b.id}`}>
-                <img
-                  src={b.src}
-                  alt={b.alt}
-                  className="h-[28px] md:h-[36px] object-contain opacity-90 [transform:scaleX(-1)]"
-                  draggable={false}
-                />
-              </Slider.Slide>
-            ))}
-          </Slider>
-          </div>
-        </div>
+        <div className="w-full max-w-[1280px] mx-auto mb-10 md:mb-14">
+  <div className="h-[99px] flex items-center overflow-hidden">
+    <div className="[transform:scaleX(-1)] w-full">
+      <Slider duration={35} pauseOnHover={false} blurBorders={false}>
+        {BRANDS.map((b) => (
+          <Slider.Slide key={`top-${b.id}`}>
+            {/* spacing + vertical center lives here */}
+            <div className="px-[29px] h-[99px] flex items-center">
+              <img
+                src={b.src}
+                alt={b.alt}
+                className="
+                  h-[34px] sm:h-[38px] md:h-[44px] lg:h-[48px]
+                  object-contain opacity-90
+                  [transform:scaleX(-1)]
+                "
+                draggable={false}
+              />
+            </div>
+          </Slider.Slide>
+        ))}
+      </Slider>
+    </div>
+  </div>
+</div>
+
+
 
         {/* Center content */}
         <div className="w-full max-w-[700px] text-center flex flex-col items-center">
@@ -67,6 +79,7 @@ export const DoneStep: React.FC<DoneStepProps> = () => {
           </p>
 
           <button
+            onClick={handleSearchBrands}
             type="button"
             className="
               mt-8
@@ -80,11 +93,10 @@ export const DoneStep: React.FC<DoneStepProps> = () => {
               shadow-sm hover:shadow-md transition
             "
           >
-            {/* Google icon placeholder */}
             <span className="inline-flex h-6 w-6 items-center justify-center">
               <img
-                src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png"
-                alt=""
+                src={googleicon}
+                alt="Google"
                 className="h-5 w-5 object-contain"
                 draggable={false}
               />
@@ -93,25 +105,29 @@ export const DoneStep: React.FC<DoneStepProps> = () => {
           </button>
         </div>
 
-        {/* BOTTOM infinite carousel (reverse direction) */}
-        <div className="w-full max-w-[1100px] mt-12 md:mt-16">
-          <Slider
-            duration={35}
-            pauseOnHover={false}
-            blurBorders={false}
-          >
-            {BRANDS.map((b) => (
-              <Slider.Slide key={`bottom-${b.id}`}>
-                <img
-                  src={b.src}
-                  alt={b.alt}
-                  className="h-[28px] md:h-[36px] object-contain opacity-90"
-                  draggable={false}
-                />
-              </Slider.Slide>
-            ))}
-          </Slider>
-        </div>
+       <div className="w-full max-w-[1280px] mx-auto mt-12 md:mt-16">
+  <div className="h-[99px] flex items-center overflow-hidden">
+    <Slider duration={35} pauseOnHover={false} blurBorders={false}>
+      {BRANDS.map((b) => (
+        <Slider.Slide key={`bottom-${b.id}`}>
+          <div className="px-[29px] h-[99px] flex items-center">
+            <img
+              src={b.src}
+              alt={b.alt}
+              className="
+                h-[34px] sm:h-[38px] md:h-[44px] lg:h-[48px]
+                object-contain opacity-90
+              "
+              draggable={false}
+            />
+          </div>
+        </Slider.Slide>
+      ))}
+    </Slider>
+  </div>
+</div>
+
+
       </main>
     </div>
   );

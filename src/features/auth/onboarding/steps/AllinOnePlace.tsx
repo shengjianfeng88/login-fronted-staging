@@ -11,7 +11,6 @@ export const AllinOnePlaceProps: React.FC<AllinOnePlaceProps> = () => {
     <div className="flex flex-col w-full h-full">
      
      <section className="w-full flex flex-col items-center mt-10">
-  {/* title + description block */}
   <div className="w-full max-w-[710px] flex flex-col items-center text-center gap-[22px]">
     <h2 className="text-[40px] md:text-[48px] font-bold text-[#000000]">
       Try-On History
