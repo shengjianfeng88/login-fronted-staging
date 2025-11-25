@@ -6,6 +6,7 @@ import axios from 'axios';
 import { tryonApi } from '../../api/tryon';
 import { getApiUrl } from '../../config/api';
 import { getAccessToken } from '../../utils/auth';
+import Newtryon from './Newtryon';
 
 const CURRENCY_ALIASES: Record<string, string> = {
   usd: 'USD', '$': 'USD',
@@ -396,81 +397,101 @@ const OptimizedImage: React.FC<{
 
 const TryOnSubHeader: React.FC<{
   onSortChange: (order: 'low-to-high' | 'high-to-low') => void;
-}> = ({ onSortChange }) => {
+  showDeals: boolean;
+  onToggleDeals: () => void;
+}> = ({ onSortChange, showDeals, onToggleDeals }) => {
   return (
-    <div className="flex items-center justify-between px-10 mt-4 mb-8 border-b pb-4">
-      <div className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-        <Camera className="w-6 h-6" />
-        <span>Try-on History</span>
-
-        {/* Chatbot button */}
-        <a
-          href="https://udify.app/chat/q1Kt8Quqatr4MWdS"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition-colors shadow-sm border border-gray-200"
-          title="Open Chatbot in New Tab"
-        >
-          💬 fAIshion Chatbot
-        </a>
-
-      </div>
-      <div className="flex items-center gap-4">
+    <div className="flex items-center justify-between px-4 sm:px-10 mt-4 mb-8 border-b pb-4">
+      <div className="flex flex-wrap items-center gap-2 text-2xl font-bold text-gray-800">
+        
         <button
-          onClick={() => window.location.href = '/tryon-history/favorites'}
-          className="inline-flex items-center gap-2 h-7 px-6 rounded-md border border-gray-300 bg-white text-black font-semibold font-sans hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#675BC5]/30"
+          onClick={onToggleDeals}
+          className="
+            inline-flex items-center justify-center
+            h-7 px-3 rounded-md border border-gray-300 bg-white
+            text-xs sm:text-sm font-semibold text-gray-700
+            hover:bg-gray-50 active:bg-gray-100
+            transition
+          "
         >
-          <Heart className="w-4 h-4" />
-          Favorites
+          {showDeals ? 'Back' : 'Deals'}
         </button>
 
-        <Menu as="div" className="relative inline-block text-left">
-          <Menu.Button className="inline-flex items-center gap-2 h-7 px-6 rounded-md border border-gray-300 bg-white text-black font-semibold font-sans hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#675BC5]/30">
-            Sort By
-            <ChevronDown className="w-4 h-4" />
-          </Menu.Button>
-          <Transition
-            as={Fragment}
-            enter="transition ease-out duration-100"
-            enterFrom="transform opacity-0 scale-95"
-            enterTo="transform opacity-100 scale-100"
-            leave="transition ease-in duration-75"
-            leaveFrom="transform opacity-100 scale-100"
-            leaveTo="transform opacity-0 scale-95"
-          >
-            <Menu.Items className="absolute right-0 z-[9999] mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <Camera className="w-6 h-6" />
+        <span>{showDeals ? 'Try-on History | Deals for you' : 'Try-on History'}</span>
 
-              <div className="py-1">
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={() => onSortChange('low-to-high')}
-                      className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                        } block px-4 py-2 text-sm w-full text-left`}
-                    >
-                      Price: Low to High
-                    </button>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={() => onSortChange('high-to-low')}
-                      className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                        } block px-4 py-2 text-sm w-full text-left`}
-                    >
-                      Price: High to Low
-                    </button>
-                  )}
-                </Menu.Item>
-              </div>
-            </Menu.Items>
-          </Transition>
-        </Menu>
+        {/* Chatbot ONLY on history mode */}
+        {!showDeals && (
+          <a
+            href="https://udify.app/chat/q1Kt8Quqatr4MWdS"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex shrink-0 whitespace-nowrap items-center px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition-colors shadow-sm border border-gray-200"
+            title="Open Chatbot in New Tab"
+          >
+            💬 fAIshion Chatbot
+          </a>
+        )}
       </div>
+
+        <div className="flex items-center gap-2 sm:gap-4">
+          <button
+            onClick={() => window.location.href = '/tryon-history/favorites'}
+            className="inline-flex items-center gap-2 h-7 px-4 sm:px-6 rounded-md border border-gray-300 bg-white text-black font-semibold font-sans hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#675BC5]/30 text-xs sm:text-sm"
+          >
+            <Heart className="w-4 h-4" />
+            Favorites
+          </button>
+
+          <Menu as="div" className="relative inline-block text-left">
+            <Menu.Button className="inline-flex items-center gap-2 h-7 px-4 sm:px-6 rounded-md border border-gray-300 bg-white text-black font-semibold font-sans hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#675BC5]/30 text-xs sm:text-sm">
+              Sort By
+              <ChevronDown className="w-4 h-4" />
+            </Menu.Button>
+
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-95"
+              enterTo="transform opacity-100 scale-100"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100"
+              leaveTo="transform opacity-0 scale-95"
+            >
+              <Menu.Items className="absolute right-0 z-[9999] mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <div className="py-1">
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        onClick={() => onSortChange('low-to-high')}
+                        className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                          } block px-4 py-2 text-sm w-full text-left`}
+                      >
+                        Price: Low to High
+                      </button>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        onClick={() => onSortChange('high-to-low')}
+                        className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                          } block px-4 py-2 text-sm w-full text-left`}
+                      >
+                        Price: High to Low
+                      </button>
+                    )}
+                  </Menu.Item>
+                </div>
+              </Menu.Items>
+            </Transition>
+          </Menu>
+        </div>
+    
     </div>
   );
 };
+
 
 interface ProductProps {
   image: string;
@@ -946,6 +967,16 @@ const ThumbnailRail: React.FC<{
 );
 };
 
+const DealsPlaceholder: React.FC = () => {
+  return (
+    <div className="w-full flex flex-col items-center justify-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+      <p className="text-lg font-semibold text-gray-800">New Try-On / Deals View</p>
+      <p className="text-sm text-gray-500 mt-2">
+        Replace this block with your new-tryon product cards.
+      </p>
+    </div>
+  );
+};
 
 const Content: React.FC<ContentProps> = ({ searchQuery }) => {
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -954,6 +985,14 @@ const Content: React.FC<ContentProps> = ({ searchQuery }) => {
   const [showModal, setShowModal] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sortOrder, setSortOrder] = useState<'low-to-high' | 'high-to-low' | null>(null);
+    const [showDeals, setShowDeals] = useState(false);
+  const toggleDealsView = useCallback(() => {
+    setShowDeals(v => !v);
+    // close modal if switching views
+    setShowModal(false);
+    setSelectedProduct(null);
+  }, []);
+
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     product: GroupedProduct | null;
@@ -1559,46 +1598,47 @@ return () => { cancelled = true; };
           </div>
         ) : (
           <>
-            <TryOnSubHeader
+                        <TryOnSubHeader
               onSortChange={setSortOrder}
+              showDeals={showDeals}
+              onToggleDeals={toggleDealsView}
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full">
-              {base.map((item) => (
-                <div
-                  key={item.productUrl || 'unknown'}
-                  onClick={() => {
-                    setSelectedProduct(item);
-                    setCurrentImageIndex(0);
-                    setShowModal(true);
-                  }}
-                >
-                  <ProductCard
-                    image={item.images[0]?.url || ''} // Show the latest image
-                    brand={item.productInfo?.brand_name || 'Unknown Brand'}
-                    name={item.productInfo?.product_name || item.productInfo?.name || 'Unknown Product'}
-                    price={item.productInfo?.price || 'N/A'}
-                    currency={item.productInfo?.currency || ''}
-                    timestamp={item.latestTimestamp || new Date().toISOString()}
-                    url={item.productInfo?.product_url || item.productInfo?.url || ''}
-                    isFavorite={item.isFavorite || false}
-                    onToggleFavorite={() => toggleFavorite(item.productUrl || '')}
-                    onDelete={() => handleDeleteClick(item)}
-                    imageCount={item.totalTryOns || item.images.length}
-                   
-                  />
-                </div>
-              ))}
-            </div>
+
+            {/* Switch the whole card area */}
+            {!showDeals ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full">
+                {base.map((item) => (
+                  <div
+                    key={item.productUrl || 'unknown'}
+                    onClick={() => {
+                      setSelectedProduct(item);
+                      setCurrentImageIndex(0);
+                      setShowModal(true);
+                    }}
+                  >
+                    <ProductCard
+                      image={item.images[0]?.url || ''} 
+                      brand={item.productInfo?.brand_name || 'Unknown Brand'}
+                      name={item.productInfo?.product_name || item.productInfo?.name || 'Unknown Product'}
+                      price={item.productInfo?.price || 'N/A'}
+                      currency={item.productInfo?.currency || ''}
+                      timestamp={item.latestTimestamp || new Date().toISOString()}
+                      url={item.productInfo?.product_url || item.productInfo?.url || ''}
+                      isFavorite={item.isFavorite || false}
+                      onToggleFavorite={() => toggleFavorite(item.productUrl || '')}
+                      onDelete={() => handleDeleteClick(item)}
+                      imageCount={item.totalTryOns || item.images.length}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Newtryon />
+            )}
+
           </>
         )}
-        {loading && products.length > 0 && (
-          <div className="flex justify-center items-center mt-8 py-4">
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 border-2 border-[#6C5DD3] border-t-transparent rounded-full animate-spin" />
-              <span className="text-gray-600">Loading more items...</span>
-            </div>
-          </div>
-        )}
+        
       </div>
 
       {/* Delete Confirmation Modal */}
