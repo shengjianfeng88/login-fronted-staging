@@ -10,6 +10,7 @@ import StatsCards from "@/components/subscription/StatsCards";
 import FreePlanCard from "@/components/subscription/FreePlanCard";
 import PlusPlanCard from "@/components/subscription/PlusPlanCard";
 import CancelSubscriptionModal from "@/components/subscription/CancelSubscriptionModal";
+import BillingCycleToggle from "@/components/subscription/BillingCycleToggle";
 
 const Subscription: React.FC = () => {
   const navigate = useNavigate();
@@ -134,7 +135,7 @@ const Subscription: React.FC = () => {
         const quotaResponse = response.data;
         const quota = quotaResponse?.quota || {};
         const credits = quotaResponse?.credits ?? 0;
-        
+
         setQuotaData({
           userType: quota?.userType || "free",
           freeTryOnQuota: quota?.freeTryOnQuota ?? 0,
@@ -307,7 +308,7 @@ const Subscription: React.FC = () => {
         message.success(
           "Your subscription has been cancelled and will not renew. You'll continue to have access to Plus features until the end of your current billing period."
         );
-        
+
         // 简化处理：直接刷新页面以获取最新状态
         window.location.reload();
       } else {
@@ -422,6 +423,10 @@ const Subscription: React.FC = () => {
                 </h2>
               </div>
 
+              <div className="flex flex-col items-center mb-6">
+                <BillingCycleToggle billingCycle={billingCycle} onChange={setBillingCycle} />
+              </div>
+
               <div className="flex flex-col lg:flex-row items-stretch justify-center gap-8 w-full">
                 <FreePlanCard
                   hasPlusPlan={hasPremiumAccess()}
@@ -430,8 +435,8 @@ const Subscription: React.FC = () => {
                 <PlusPlanCard
                   amountDisplay={getSelectedAmountDisplay()}
                   priceLabel={getSelectedPriceLabel()}
-                  billingCycle={billingCycle}
-                  onBillingChange={setBillingCycle}
+                  // billingCycle={billingCycle} // Removed
+                  // onBillingChange={setBillingCycle} // Removed
                   isPlansLoading={isPlansLoading}
                   description={selectedPlan?.description}
                   hasPlusPlan={hasPremiumAccess()}
