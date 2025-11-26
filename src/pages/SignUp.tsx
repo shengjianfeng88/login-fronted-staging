@@ -8,8 +8,9 @@ import {
   getPasswordStrengthText,
 } from "@/utils/validation";
 import { z } from "zod";
-import { useGoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
+import { CredentialResponse } from "@react-oauth/google";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { sendMessageToExtension } from "@/utils/utils";
 import { setUser } from "@/store/features/userSlice";
@@ -35,6 +36,7 @@ const userSchema = z
 const SignUp: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
 
   const [error, setError] = useState("");
@@ -55,6 +57,8 @@ const SignUp: React.FC = () => {
     confirmPassword: "",
     referralCode: "",
   });
+  const [authMethod, setAuthMethod] = useState<"link" | "password">("link");
+  const [authState, setAuthState] = useState<"request" | "sent">("request");
 
   // from URL
   useEffect(() => {
@@ -67,7 +71,21 @@ const SignUp: React.FC = () => {
     }
   }, [searchParams]);
 
-  // carousel state (kept for future)
+    useEffect(() => {
+    if (location.state?.fromSignInRedirect) {
+      // came from signup, show code input form directly
+      setAuthState("sent");
+      // Pre-fill email if provided
+      if (location.state.email) {
+        setFormData((prev) => ({ ...prev, email: location.state.email }));
+      }
+    }
+    else {
+      setAuthState("request");
+      setAuthMethod("link");}
+  }, [location.state]);
+
+  // Carousel state
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [isPaused, setIsPaused] = useState<boolean>(false);
@@ -131,11 +149,13 @@ const SignUp: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setError("")
+    console.log("Form submitted with data:", formData);
     e.preventDefault();
-    if (!validateForm()) return;
-
+    if(authMethod == "password")
+      if (!validateForm()) return;
     setIsLoading(true);
-
+    let endpoint = "";
     try {
       const requestData: {
         email: string;
@@ -143,19 +163,78 @@ const SignUp: React.FC = () => {
         referralCode?: string;
       } = {
         email: formData.email,
-        password: formData.password,
       };
 
       if (formData.referralCode.trim()) {
         requestData.referralCode = formData.referralCode.trim();
       }
+      
+      if (authMethod === "password") {
+        endpoint = "/auth/request-register";
+        requestData.password = formData.password;
+      } else {
+        endpoint = "/auth/request-auth";
+      }
+
+      const res = await axiosInstance.post(endpoint, requestData);
+      const response = res.data;
+
+     if (response.action === "login") {
+      // 🟣 Existing user — switch to login
+        navigate("/signin", {
+        state: {
+        fromSignupRedirect: true,
+        email: formData.email, // 👈 pass the email forward
+    },
+  });
+    } 
+    //setting the state to sent renders the link sent page
+    setAuthState("sent");
 
       await axiosInstance.post("/auth/request-register", requestData);
       alert("Verification email sent! Check your inbox.");
       navigate("/onboarding");
     } catch (_error) {
-      console.error("Registration failed:", _error);
-      setError("Registration failed");
+      
+      const err = _error as any;
+      console.log(err.response?.data?.message || "Something went wrong");
+      setError("Signup failed Please try again later");
+      setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendLink = async () => {
+    setIsLoading(true);
+    setError("");
+    if(authMethod == "password")
+      if (!validateForm()) return;
+    setIsLoading(true);
+    let endpoint = "";
+    try {
+      const requestData: any = {
+        email: formData.email,
+      };
+
+      // 如果有推荐码，添加到请求中
+      if (formData.referralCode.trim()) {
+        requestData.referralCode = formData.referralCode.trim();
+      }
+      
+      if (authMethod === "password") {
+        endpoint = "/auth/request-register";
+        requestData.password = formData.password;
+      } else {
+        endpoint = "/auth/request-auth";
+      }
+      const res = await axiosInstance.post(endpoint, requestData);
+      const response = res.data;
+    }
+    catch (err) {
+      console.error("Resend link failed:", err);
+      const error = err as any;
+      setError(error.response?.data?.message || "Resend link failed. Please try again later.");
     } finally {
       setIsLoading(false);
     }

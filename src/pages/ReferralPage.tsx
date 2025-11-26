@@ -129,7 +129,7 @@ const ReferralPage: React.FC = () => {
     },
     {
       icon: <UserPlus className="text-gray-500" size={20} />,
-      title: "Friend Sign Up",
+      title: "Friend Sign Up and Log In",
       description: "Your friend creates an account using your referral link",
     },
     {
