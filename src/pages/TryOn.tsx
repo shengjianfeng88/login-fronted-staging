@@ -136,7 +136,7 @@ const TryOnTester = () => {
         product_info: { vendor }
       }
       
-      const res = await fetch("http://localhost:5006/test/tryon", {
+      const res = await fetch("https://tryon-images.faishion.ai/test/tryon", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
