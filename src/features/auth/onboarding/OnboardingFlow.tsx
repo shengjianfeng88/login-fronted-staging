@@ -11,6 +11,10 @@ import { AllinOnePlaceProps } from "./steps/AllinOnePlace";
 import { ShortcutProps } from "./steps/Shortcut";
 import { DoneStep } from "./steps/DoneStepProps";
 
+const scrollToOnboardingTop = () => {
+  window.scrollTo({ top: 0, behavior: "auto" });
+};
+
 type Step =
   | "pinToolbar"
   | "chooseViewer"
@@ -66,8 +70,10 @@ export const OnboardingFlow: React.FC = () => {
       case "uploadOwnPhoto":
         return setStep("chooseViewer");
       case "howItWorks":
+        scrollToOnboardingTop();
         return setStep("chooseViewer");
       case "SizeHowItWorksStep":
+        scrollToOnboardingTop();  
         return setStep("howItWorks");
       case "chatbot":
         return setStep("SizeHowItWorksStep");
@@ -86,10 +92,13 @@ export const OnboardingFlow: React.FC = () => {
     switch (step) {
       case "sampleModel":
       case "uploadOwnPhoto":
+        scrollToOnboardingTop();
         return setStep("howItWorks");
       case "howItWorks":
+        scrollToOnboardingTop();
         return setStep("SizeHowItWorksStep");
       case "SizeHowItWorksStep":
+        scrollToOnboardingTop();
         return setStep("chatbot");
       case "chatbot":
         return setStep("AllinOnePlaceProps");
@@ -122,8 +131,8 @@ export const OnboardingFlow: React.FC = () => {
         nextLabel={headerNextLabel}
       />
 
-      <section className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-10">
-        <div className="w-full max-w-[1280px] transition-all duration-300">
+      <section className="flex min-h-[60vh] md:min-h-[75vh] items-start md:items-center justify-center">
+        <div className="w-full max-w-[1240px] transition-all duration-300">
           {step === "pinToolbar" && (
             <PinToolbarStep onNext={() => setStep("chooseViewer")} />
           )}

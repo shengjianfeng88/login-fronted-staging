@@ -272,7 +272,7 @@ const SignUp = () => {
   return (
     <>
   <OnboardingHeader/>
-    <main className="min-h-screen flex items-center justify-center px-4">
+    <main className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4">
       
       <div className="flex w-full max-w-[1177px] flex-col md:flex-row items-stretch gap-8 lg:gap-[137px]">
         {/* Left side (for the form) */}
@@ -290,7 +290,7 @@ const SignUp = () => {
 
           <div className="p-6 md:p-8 lg:p-10 flex flex-col w-full h-full justify-center">
             {/* Form content */}
-            <div className="w-full max-w-[90%] mx-auto">
+            <div className="w-full max-w-full md:max-w-[90%] mx-auto">
               {/* Welcome text */}
               <div className="mb-5">
                 <h1 className="font-semibold text-2xl md:text-3xl text-[#2F2F2F]">
@@ -319,7 +319,7 @@ const SignUp = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter Email"
-                    className={`w-full max-w-[404px] h-8 border border-[#D9D9D9] rounded-[10px] px-2.5 
+                    className={`w-full h-8 border border-[#D9D9D9] rounded-[10px] px-2.5 
                   text-[10px] font-medium 
                   placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9] ${emailError || errors.email
                       ? "border-red-500"
@@ -345,7 +345,7 @@ const SignUp = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter Password"
-                    className="w-full max-w-[404px] h-8 border border-[#D9D9D9] rounded-[10px] px-2.5
+                    className="w-full h-8 border border-[#D9D9D9] rounded-[10px] px-2.5
                  text-[10px] font-medium
                  placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9]"
                     autoComplete="new-password"
@@ -387,7 +387,7 @@ const SignUp = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="Enter Confirm Password"
-                    className="w-full max-w-[404px] h-8 border border-[#D9D9D9] rounded-[10px] px-2.5
+                    className="w-full h-8 border border-[#D9D9D9] rounded-[10px] px-2.5
                  text-[10px] font-medium
                  placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9]"
                     autoComplete="new-password"
@@ -444,15 +444,13 @@ const SignUp = () => {
 
         {/* Right side (for the picture and other stuff) */}
         <div className="hidden md:flex flex-1 items-center justify-center">
-  <div className="h-[547px] w-full max-w-[540px] rounded-[24px] bg-[#F7F7F7] flex items-center justify-center">
+  <div className="w-full md:max-w-[470px]">
     {/* Inner white card */}
-    <div className="w-full
-      max-w-[607px]
-      aspect-[607/777]
-      rounded-[24px]
-      bg-[#F7F7F7]
-      overflow-hidden
-      shadow-[0_4px_15px_rgba(0,0,0,0.25)]">
+    <div className=" w-full
+        aspect-[607/777]      
+        rounded-[24px]
+        overflow-hidden
+        shadow-[0_4px_15px_rgba(0,0,0,0.25)]">
       <video
         src={signupVideo}
         autoPlay

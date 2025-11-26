@@ -43,107 +43,115 @@ const F_BUTTON_FEATURES = [
 ];
 
 export const ShortcutProps: React.FC<ShortcutProps> = ({ onBack, onNext }) => {
+  const leftFeatures = F_BUTTON_FEATURES.filter(
+    (f) => f.id === "fab" || f.id === "history"
+  );
+  const rightFeatures = F_BUTTON_FEATURES.filter(
+    (f) => f.id === "chatbot" || f.id === "size"
+  );
+
   return (
-    <div className="flex flex-col w-full h-full">
-      <section className="w-full flex flex-col items-center mt-10">
-        {/* title + desc */}
+    <div className="flex flex-col w-full h-full bg-white">
+      <section className="w-full flex flex-col items-center">
         <div className="w-full max-w-[710px] flex flex-col items-center text-center gap-[22px] px-4">
-          <h2 className="text-[40px] md:text-[48px] font-bold text-[#000000]">
+          <h2 className="text-[29px] md:text-[37px] lg:text-[45px] font-bold text-[#000000]">
             Floating Action Button
           </h2>
-          <p className="text-[18px] font-normal text-[#000000] leading-[1.2]">
-            Gives you access to Virtual Try-On, Size Recommendation, and AI Stylist
-            Chatbot when you hover over it.
+          <p className="text-[16px] md:text-[18px] font-normal text-[#000000] leading-[1.3]">
+            Gives you access to Virtual Try-On, Size Recommendation, and AI
+            Stylist Chatbot when you hover over it.
           </p>
         </div>
 
-        {/* video block */}
-        <div className="w-full flex justify-center mt-8 px-4">
+        {/* main layout: left features – center video – right features */}
+        <div className="w-full max-w-[1280px] mx-auto mt-8 md:mt-10 px-4 md:px-6 lg:px-10">
           <div
             className="
-              w-full max-w-[628px]
-              aspect-[628/373]
-              rounded-[7px]
-              border-[7px] border-[#6A5ACD]
-              shadow-[0_4px_4px_rgba(0,0,0,0.25)]
-              overflow-hidden
+              grid grid-cols-1
+              gap-10 md:gap-12
+              items-center
+              md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)]
             "
           >
-            <video
-              src={chatbotVideo}
-              className="w-full h-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
-            />
-          </div>
-        </div>
-
-        {/* features grid */}
-        <div
-          className="
-            w-full max-w-[1180px]
-            mx-auto mt-10 md:mt-12
-            px-6 py-6 md:px-10 md:py-6
-          "
-        >
-          <div
-            className="
-              grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4
-              gap-8 lg:gap-10
-              items-start
-              text-center
-            "
-          >
-            {F_BUTTON_FEATURES.map((feature) => (
-              <div
-                key={feature.id}
-                className="flex flex-col items-center gap-[27px] min-w-[220px]"
-              >
+            {/* LEFT features column */}
+            <div className="flex flex-col gap-8 md:gap-10 items-center text-center">
+              {leftFeatures.map((feature) => (
                 <div
-                  className="
-                    w-[66px] h-[66px] rounded-[18px] overflow-hidden
-                  "
+                  key={feature.id}
+                  className="flex flex-col items-center gap-[18px] max-w-[260px]"
                 >
-                  {feature.iconSrc ? (
-                   <img
-  src={feature.iconSrc}
-  alt={feature.title}
-  className="w-full h-full object-cover scale-[1.5]"
-  draggable={false}
-/>
-                  ) : (
-                    <div className="w-[66px] h-[66px]" />
-                  )}
+                  <div className="w-[50px] h-[50px] rounded-[18px] overflow-hidden">
+                    {feature.iconSrc && (
+                      <img
+                        src={feature.iconSrc}
+                        alt={feature.title}
+                        className="w-full h-full object-contain"
+                        draggable={false}
+                      />
+                    )}
+                  </div>
+
+                  <h3 className="text-[18px] md:text-[20px] font-bold text-[#1E1E1E] leading-[1.2] tracking-[-0.02em]">
+                    {feature.title}
+                  </h3>
+
+                  <p className="text-[12px] font-inter text-[#757575] leading-[1.4]">
+                    {feature.body}
+                  </p>
                 </div>
+              ))}
+            </div>
 
-                <h3
-                  className="
-                    text-[22px] md:text-[22px]
-                    font-bold
-                    text-[#1E1E1E]
-                    leading-[1.2]
-                    tracking-[-0.02em]
-                  "
-                >
-                  {feature.title}
-                </h3>
-
-                {/* Body */}
-                <p
-                  className="
-                    text-[14px]
-                    font-medium
-                    text-[#757575]
-                    leading-[1.4]
-                    max-w-[251px]
-                  "
-                >
-                  {feature.body}
-                </p>
+            <div className="w-full flex justify-center">
+              <div
+                className="
+                  w-full max-w-[546px]
+                  aspect-[546/325]
+                  rounded-[7px]
+                  border-[7px] border-[#6A5ACD]
+                  shadow-[0_4px_4px_rgba(0,0,0,0.25)]
+                  overflow-hidden
+                "
+              >
+                <video
+                  src={chatbotVideo}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
               </div>
-            ))}
+            </div>
+
+            {/* RIGHT features column */}
+            <div className="flex flex-col gap-8 md:gap-10 items-center text-center">
+              {rightFeatures.map((feature) => (
+                <div
+                  key={feature.id}
+                  className="flex flex-col items-center gap-[18px] max-w-[260px]"
+                >
+                  <div className="w-[50px] h-[50px] rounded-[18px] overflow-hidden">
+                    {feature.iconSrc && (
+                      <img
+                        src={feature.iconSrc}
+                        alt={feature.title}
+                        className="w-full h-full object-contain"
+                        draggable={false}
+                      />
+                    )}
+                  </div>
+
+                  <h3 className="text-[18px] md:text-[20px] font-bold text-[#1E1E1E] leading-[1.2] tracking-[-0.02em]">
+                    {feature.title}
+                  </h3>
+
+                  <p className="text-[12px] font-inter text-[#757575] leading-[1.4]">
+                    {feature.body}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

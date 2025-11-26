@@ -10,7 +10,7 @@ export const AllinOnePlaceProps: React.FC<AllinOnePlaceProps> = () => {
   return (
     <div className="flex flex-col w-full h-full">
      
-     <section className="w-full flex flex-col items-center mt-10">
+     <section className="w-full flex flex-col items-center">
   <div className="w-full max-w-[710px] flex flex-col items-center text-center gap-[22px]">
     <h2 className="text-[40px] md:text-[48px] font-bold text-[#000000]">
       Try-On History
@@ -21,17 +21,21 @@ export const AllinOnePlaceProps: React.FC<AllinOnePlaceProps> = () => {
   </div>
 
        
-        <div className="w-full flex justify-center mt-8">
+        <div className="mt-8 w-full flex justify-center">
     <div
       className="
           w-full
-      max-w-[814px]         
-      aspect-[814/458]      
-      rounded-[18px]
-      border-[7px] border-[#6A5ACD]
-      bg-white
-      shadow-[0_4px_4px_rgba(0,0,0,0.25)]
-      overflow-hidden
+    max-w-[360px]      
+    sm:max-w-[440px]   
+    md:max-w-[560px]   
+    lg:max-w-[680px]   
+    xl:max-w-[760px]   
+    aspect-[814/458]   
+    rounded-[18px]
+    border-[7px] border-[#6A5ACD]
+    bg-white
+    shadow-[0_4px_4px_rgba(0,0,0,0.25)]
+    overflow-hidden
       "
     >
             <video

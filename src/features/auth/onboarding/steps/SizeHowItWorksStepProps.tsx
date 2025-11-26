@@ -109,7 +109,7 @@ export const SizeHowItWorksStep: React.FC<SizeHowItWorksStepProps> = ({
                 key={step.id}
                className={`flex flex-col gap-6 md:gap-10 lg:gap-12 items-center mx-auto w-full max-w-[1106px] ${
     isReversed ? "md:flex-row-reverse" : "md:flex-row"
-  } ${index > 0 ? "mt-[120px] md:mt-[150px]" : ""}`}
+  } ${index > 0 ? "mt-[70px] md:mt-[100px]" : ""}`}
               >
                 {/* Text block */}
                 <div className="w-full md:w-[48%]">
@@ -130,7 +130,6 @@ export const SizeHowItWorksStep: React.FC<SizeHowItWorksStepProps> = ({
                       autoPlay
                       loop
                       muted
-                    preload="none"
                       playsInline
                     />
                   </div>
