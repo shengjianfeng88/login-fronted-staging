@@ -29,7 +29,7 @@ console.log('environment', 'staging.......,,..');
 
 function App() {
   const googleClientId =
-    '261406484674-gi5ric620ka8oijufm3bp6ng6jeuvdn1.apps.googleusercontent.com';
+    '971735150173-ur3agv4qp5e4as77d3ivotvimhogikqm.apps.googleusercontent.com';
   return (
     <Provider store={store}>
       <GoogleOAuthProvider clientId={googleClientId!}>
@@ -40,6 +40,7 @@ function App() {
             }
           >
             <Routes>
+              <Route path='/' element={<SignUp />} />
               <Route path='/signin' element={<SignIn />} />
               <Route path='/signup' element={<SignUp />} />
               {/* Register page for invitation links */}
@@ -53,6 +54,7 @@ function App() {
               <Route path='/verify-email' element={<VerifyEmail />} />
               <Route path='*' element={<PageNotFound />} />
               <Route path='/confirm-register' element={<ConfirmRegister />} />
+              <Route path='/confirm-signup' element={<ConfirmSignup/>} />
               <Route path='/auto-test/*' element={<AutoTest />} />
               <Route path='/faishion-chatbot' element={<ChatWidget />} />
               <Route path='/chat' element={<ChatWidget />} />

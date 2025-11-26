@@ -10,7 +10,7 @@ import {
 import { z } from "zod";
 import { useGoogleLogin } from "@react-oauth/google";
 import { CredentialResponse } from "@react-oauth/google";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { sendMessageToExtension } from "@/utils/utils";
 import { setUser } from "@/store/features/userSlice";
@@ -42,6 +42,7 @@ const userSchema = z
 const SignUp = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -60,6 +61,8 @@ const SignUp = () => {
     confirmPassword: "",
     referralCode: "",
   });
+  const [authMethod, setAuthMethod] = useState<"link" | "password">("link");
+  const [authState, setAuthState] = useState<"request" | "sent">("request");
 
   // 从URL参数获取推荐码
   useEffect(() => {
@@ -71,6 +74,20 @@ const SignUp = () => {
       }));
     }
   }, [searchParams]);
+
+    useEffect(() => {
+    if (location.state?.fromSignInRedirect) {
+      // came from signup, show code input form directly
+      setAuthState("sent");
+      // Pre-fill email if provided
+      if (location.state.email) {
+        setFormData((prev) => ({ ...prev, email: location.state.email }));
+      }
+    }
+    else {
+      setAuthState("request");
+      setAuthMethod("link");}
+  }, [location.state]);
 
   // Carousel state
   const [activeSlide, setActiveSlide] = useState<number>(0);
@@ -136,27 +153,89 @@ const SignUp = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setError("")
+    console.log("Form submitted with data:", formData);
     e.preventDefault();
-    if (!validateForm()) return;
+    if(authMethod == "password")
+      if (!validateForm()) return;
     setIsLoading(true);
-
+    let endpoint = "";
     try {
-      const requestData: { email: string; password: string; referralCode?: string } = {
+      const requestData: any = {
         email: formData.email,
-        password: formData.password,
       };
 
       // 如果有推荐码，添加到请求中
       if (formData.referralCode.trim()) {
         requestData.referralCode = formData.referralCode.trim();
       }
+      
+      if (authMethod === "password") {
+        endpoint = "/auth/request-register";
+        requestData.password = formData.password;
+      } else {
+        endpoint = "/auth/request-auth";
+      }
+
+      const res = await axiosInstance.post(endpoint, requestData);
+      const response = res.data;
+
+     if (response.action === "login") {
+      // 🟣 Existing user — switch to login
+        navigate("/signin", {
+        state: {
+        fromSignupRedirect: true,
+        email: formData.email, // 👈 pass the email forward
+    },
+  });
+    } 
+    //setting the state to sent renders the link sent page
+    setAuthState("sent");
 
       await axiosInstance.post("/auth/request-register", requestData);
       alert("Verification email sent! Check your inbox.");
       navigate("/onboarding");
     } catch (_error) {
-      console.error("Registration failed:", _error);
-      setError("Registration failed");
+      
+      const err = _error as any;
+      console.log(err.response?.data?.message || "Something went wrong");
+      setError("Signup failed Please try again later");
+      setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendLink = async () => {
+    setIsLoading(true);
+    setError("");
+    if(authMethod == "password")
+      if (!validateForm()) return;
+    setIsLoading(true);
+    let endpoint = "";
+    try {
+      const requestData: any = {
+        email: formData.email,
+      };
+
+      // 如果有推荐码，添加到请求中
+      if (formData.referralCode.trim()) {
+        requestData.referralCode = formData.referralCode.trim();
+      }
+      
+      if (authMethod === "password") {
+        endpoint = "/auth/request-register";
+        requestData.password = formData.password;
+      } else {
+        endpoint = "/auth/request-auth";
+      }
+      const res = await axiosInstance.post(endpoint, requestData);
+      const response = res.data;
+    }
+    catch (err) {
+      console.error("Resend link failed:", err);
+      const error = err as any;
+      setError(error.response?.data?.message || "Resend link failed. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -219,7 +298,7 @@ const SignUp = () => {
         }
 
         localStorage.setItem("email", userEmail);
-
+        
         // Update Redux store with complete user information
         dispatch(setUser({
           email: userEmail,
@@ -307,6 +386,8 @@ const SignUp = () => {
                 <div className="text-red-500 text-xs mb-3 w-full">{error}</div>
               )}
 
+              {/* Password-based signup */}
+              {authMethod === "password" && authState === "request" && (
               <form onSubmit={handleSubmit} className="w-full">
                 {/* Email input */}
                 <div className="mb-3">
@@ -407,25 +488,116 @@ const SignUp = () => {
                 >
                   {isLoading ? "Creating Account..." : "Create Account"}
                 </button>
-              </form>
+                  <p
+                    onClick={() => {
+                      setAuthMethod("link");
+                    }}
+                    className="text-center text-sm mt-3 text-gray-600 cursor-pointer hover:underline"
+                  >
+                    Use email link instead
+                  </p>
+                </form>
+              )}
 
-              {/* Or divider */}
-              <div className="flex items-center my-4 w-full">
-                <div className="flex-grow h-px bg-[#2E2E2E]"></div>
-                <span className="mx-3 text-sm font-medium text-[#2E2E2E]">
-                  or
-                </span>
-                <div className="flex-grow h-px bg-[#2E2E2E]"></div>
+               {/* Link-based signup */}
+              {authMethod === "link" && authState === "request" && (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                   {/* Email input */}
+                <div className="mb-3">
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Email"
+                    className={`w-full h-10 border rounded-lg px-4 text-sm ${emailError || errors.email
+                      ? "border-red-500"
+                      : "border-[#DADCE0]"
+                      }`}
+                    autoComplete="email"
+                  />
+                  {(emailError || errors.email) && (
+                    <p className="text-red-500 text-xs mt-1 text-left">
+                      {emailError || errors.email}
+                    </p>
+                  )}
+                </div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-black text-white py-3 rounded-lg"
+                  >
+                    {isLoading ? "Sending..." : "Signup"}
+                  </button>
+                  <p
+                    onClick={() => {
+                      setAuthMethod("password");
+                    }}
+                    className="text-center text-sm mt-3 text-gray-600 cursor-pointer hover:underline"
+                  >
+                    Prefer password signup?
+                  </p>
+                </form>
+              )}
+
+              {/* Sent screen */}
+              {authState === "sent" && (
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold mb-2">Check your inbox</h3>
+                  <p className="text-sm text-gray-600 mb-6">
+                    We sent a sign-up link to <b>{formData.email}</b>.
+                  </p>
+                  {/* Buttons */}
+                    <div className="space-y-3">
+                      <button
+                        onClick={handleResendLink}
+                        disabled={isLoading}
+                        className={`w-full py-3 rounded-lg font-medium transition ${
+                          isLoading
+                            ? "bg-gray-400 text-white cursor-not-allowed"
+                            : "bg-black text-white hover:bg-gray-900"
+                        }`}
+                      >
+                        {isLoading ? "Sending..." : "Resend link"}
+                      </button>
+              
+                      <button
+                        onClick={() => {
+                          setAuthMethod("password");
+                          setAuthState("request");
+                        }}
+                        className="w-full py-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-black font-medium transition"
+                      >
+                        Create password instead
+                      </button>
+                    </div>
+                </div>
+              )}
+
+             {/* Divider */}
+              <div className="flex items-center my-4">
+                <div className="flex-grow h-px bg-gray-300"></div>
+                <span className="mx-2 text-sm text-gray-500">or</span>
+                <div className="flex-grow h-px bg-gray-300"></div>
               </div>
 
-              {/* Google button */}
-              <div className="mb-4 w-full">
+              {/* Social Auth Buttons */}
+              <button
+                onClick={() => login()}
+                className="w-full h-10 mb-3 bg-white border border-[#DADCE0] rounded-lg text-sm font-medium flex items-center justify-center gap-2 text-[#2F2F2F] hover:bg-gray-100"
+              >
+                <img src={googleLogo} alt="Google" className="w-5 h-5" />
+                <span>Sign up with Google</span>
+              </button>
+
+              {/* Login link */}
+              <p className="text-center text-xs text-gray-500 mt-4">
+                Already have an account?{" "}
                 <button
                   onClick={() => login()}
                   className="w-full h-10 bg-white border border-[#DADCE0] rounded-[10px] text-sm font-medium flex items-center justify-center gap-2 text-[#2F2F2F] hover:bg-gray-100"
                 >
-                  <img src={googleLogo} alt="Google" className="w-5 h-5" />
-                  <span>Sign up with Google</span>
+                  LOGIN
                 </button>
               </div>
 
