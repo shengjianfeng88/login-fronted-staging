@@ -148,62 +148,62 @@ const SignUp: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    setError("")
-    console.log("Form submitted with data:", formData);
-    e.preventDefault();
-    if(authMethod == "password")
-      if (!validateForm()) return;
-    setIsLoading(true);
-    let endpoint = "";
-    try {
-      const requestData: {
-        email: string;
-        password?: string;
-        referralCode?: string;
-      } = {
-        email: formData.email,
-      };
+ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setError("");
 
-      if (formData.referralCode.trim()) {
-        requestData.referralCode = formData.referralCode.trim();
-      }
-      
-      if (authMethod === "password") {
-        endpoint = "/auth/request-register";
-        requestData.password = formData.password;
-      } else {
-        endpoint = "/auth/request-auth";
-      }
+  // ✅ Always validate before sending request
+  const isValid = validateForm();
+  if (!isValid) return;
 
-      const res = await axiosInstance.post(endpoint, requestData);
-      const response = res.data;
+  setIsLoading(true);
+  let endpoint = "";
 
-     if (response.action === "login") {
-      // 🟣 Existing user — switch to login
-        navigate("/signin", {
-        state: {
-        fromSignupRedirect: true,
-        email: formData.email, // 👈 pass the email forward
-    },
-  });
-    } 
-    //setting the state to sent renders the link sent page
-    setAuthState("sent");
+  try {
+    const requestData: {
+      email: string;
+      password?: string;
+      referralCode?: string;
+    } = {
+      email: formData.email,
+    };
 
-      await axiosInstance.post("/auth/request-register", requestData);
-      alert("Verification email sent! Check your inbox.");
-      navigate("/onboarding");
-    } catch (_error) {
-      
-      const err = _error as any;
-      console.log(err.response?.data?.message || "Something went wrong");
-      setError("Signup failed Please try again later");
-      setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
-    } finally {
-      setIsLoading(false);
+    if (formData.referralCode.trim()) {
+      requestData.referralCode = formData.referralCode.trim();
     }
-  };
+
+    // ✅ This screen is a PASSWORD signup flow
+    endpoint = "/auth/request-register";
+    requestData.password = formData.password;
+
+    const res = await axiosInstance.post(endpoint, requestData);
+    const response = res.data;
+
+    if (response.action === "login") {
+      // Existing user -> go to signin
+      navigate("/signin", {
+        state: {
+          fromSignupRedirect: true,
+          email: formData.email,
+        },
+      });
+      return; // ⬅️ stop here
+    }
+
+    // New user -> verification email sent
+    setAuthState("sent");
+    alert("Verification email sent! Check your inbox.");
+    navigate("/onboarding");
+  } catch (_error) {
+    const err = _error as any;
+    console.log(err.response?.data?.message || "Something went wrong");
+    setError(err.response?.data?.message || "Signup failed. Please try again later.");
+    setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleResendLink = async () => {
     setIsLoading(true);
@@ -241,25 +241,42 @@ const SignUp: React.FC = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  // Update form data
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
 
-    if (name === "email") {
-      if (value && !validateEmail(value)) {
-        setEmailError("Please enter a valid email address");
-      } else {
-        setEmailError("");
-      }
+  // Clear global error when user edits anything
+  setError("");
+
+  // Clear Zod field-level error on change
+  setErrors((prev) => ({
+    ...prev,
+    [name]: "", // clear error for the current field
+    // if they change password/confirmPassword, also clear confirmPassword mismatch error
+    ...(name === "password" || name === "confirmPassword"
+      ? { confirmPassword: "" }
+      : {}),
+  }));
+
+  // Email validation + live message
+  if (name === "email") {
+    if (value && !validateEmail(value)) {
+      setEmailError("Please enter a valid email address");
+    } else {
+      setEmailError("");
     }
+  }
 
-    if (name === "password") {
-      setPasswordStrength(calculatePasswordStrength(value));
-    }
-  };
+  // Password strength bar
+  if (name === "password") {
+    setPasswordStrength(calculatePasswordStrength(value));
+  }
+};
+
 
   const handleGoogleLoginSuccess = async (response: CredentialResponse) => {
     try {
@@ -308,7 +325,7 @@ const SignUp: React.FC = () => {
           accessToken: accessToken,
         });
 
-        navigate("/done");
+        navigate("/onboarding");
       }
     } catch (err) {
       console.error("Google authentication failed:", err);
