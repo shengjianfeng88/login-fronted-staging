@@ -33,13 +33,7 @@ const userSchema = z
     path: ["confirmPassword"],
   });
 
-  const emailOnlySchema = z.object({
-  email: z.string().email("Invalid email"),
-  referralCode: z.string().optional(),
-});
-
-
-const SignUp = () => {
+const SignUp: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
@@ -127,12 +121,7 @@ const SignUp = () => {
 
   const validateForm = () => {
     try {
-
-    if (authMethod === "password") {
-      userSchema.parse(formData);              // full schema
-    } else {
-      emailOnlySchema.parse(formData);         // email only
-    }
+      userSchema.parse(formData);
       setErrors({
         email: "",
         password: "",
@@ -159,18 +148,9 @@ const SignUp = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    setError("")
-    console.log("Form submitted with data:", formData);
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-    setIsLoading(true);
-    let endpoint = "";
-    try {
-      const requestData: any = {
-        email: formData.email,
-      };
+ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setError("");
 
   // ✅ Always validate before sending request
   const isValid = validateForm();
@@ -228,7 +208,8 @@ const SignUp = () => {
   const handleResendLink = async () => {
     setIsLoading(true);
     setError("");
-    if (!validateForm()) return;
+    if(authMethod == "password")
+      if (!validateForm()) return;
     setIsLoading(true);
     let endpoint = "";
     try {
