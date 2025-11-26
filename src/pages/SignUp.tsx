@@ -32,14 +32,16 @@ const userSchema = z
     path: ["confirmPassword"],
   });
 
-const SignUp = () => {
+const SignUp: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
+
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -54,7 +56,7 @@ const SignUp = () => {
     referralCode: "",
   });
 
-  // 从URL参数获取推荐码
+  // from URL
   useEffect(() => {
     const refCode = searchParams.get("ref");
     if (refCode) {
@@ -65,7 +67,7 @@ const SignUp = () => {
     }
   }, [searchParams]);
 
-  // Carousel state (currently unused but kept)
+  // carousel state (kept for future)
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [isPaused, setIsPaused] = useState<boolean>(false);
@@ -131,6 +133,7 @@ const SignUp = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
+
     setIsLoading(true);
 
     try {
@@ -160,6 +163,7 @@ const SignUp = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -190,7 +194,6 @@ const SignUp = () => {
       );
 
       if (res.data) {
-        console.log("response data: ", res.data);
         const accessToken = res.data.accessToken;
 
         localStorage.setItem("accessToken", accessToken);
@@ -207,8 +210,8 @@ const SignUp = () => {
           const decoded = JSON.parse(atob(accessToken.split(".")[1]));
           userEmail = decoded.email || res.data.email || "";
           userPicture = decoded.picture || "";
-        } catch (error) {
-          console.error("Failed to decode JWT:", error);
+        } catch (err) {
+          console.error("Failed to decode JWT:", err);
         }
 
         localStorage.setItem("email", userEmail);
@@ -228,8 +231,8 @@ const SignUp = () => {
 
         navigate("/done");
       }
-    } catch (error) {
-      console.error("Google authentication failed:", error);
+    } catch (err) {
+      console.error("Google authentication failed:", err);
       setError("Google authentication failed. Please try again.");
     }
   };
@@ -272,11 +275,11 @@ const SignUp = () => {
       <OnboardingHeader />
       <main className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4">
         <div className="flex w-full max-w-[1177px] flex-col md:flex-row items-stretch gap-8 lg:gap-[137px]">
-          {/* Left side (form) */}
+          {/* LEFT SIDE: form */}
           <div className="w-full md:max-w-[470px] bg-white rounded-[24px] border-[2px] border-[#D9D9D9] overflow-hidden flex">
             <div className="p-6 md:p-8 lg:p-10 flex flex-col w-full h-full justify-center">
               <div className="w-full max-w-full md:max-w-[90%] mx-auto">
-                {/* Welcome text */}
+                {/* Title */}
                 <div className="mb-5">
                   <h1 className="font-semibold text-2xl md:text-3xl text-[#2F2F2F]">
                     Welcome
@@ -288,12 +291,14 @@ const SignUp = () => {
                   </div>
                 </div>
 
+                {/* Error */}
                 {error && (
                   <div className="text-red-500 text-xs mb-3 w-full">
                     {error}
                   </div>
                 )}
 
+                {/* FORM */}
                 <form onSubmit={handleSubmit} className="w-full">
                   {/* Email */}
                   <div className="mb-3">
@@ -306,13 +311,11 @@ const SignUp = () => {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="Enter Email"
-                      className={`w-full h-8 border rounded-[10px] px-2.5 
-                        text-[10px] font-medium 
-                        placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9] ${
-                          emailError || errors.email
-                            ? "border-red-500"
-                            : "border-[#DADCE0]"
-                        }`}
+                      className={`w-full h-8 border rounded-[10px] px-2.5 text-[10px] font-medium placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9] ${
+                        emailError || errors.email
+                          ? "border-red-500"
+                          : "border-[#DADCE0]"
+                      }`}
                       autoComplete="email"
                     />
                     {(emailError || errors.email) && (
@@ -333,9 +336,7 @@ const SignUp = () => {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="Enter Password"
-                      className="w-full h-8 border border-[#D9D9D9] rounded-[10px] px-2.5
-                        text-[10px] font-medium
-                        placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9]"
+                      className="w-full h-8 border border-[#D9D9D9] rounded-[10px] px-2.5 text-[10px] font-medium placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9]"
                       autoComplete="new-password"
                     />
                     {formData.password && (
@@ -376,9 +377,7 @@ const SignUp = () => {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="Enter Confirm Password"
-                      className="w-full h-8 border border-[#D9D9D9] rounded-[10px] px-2.5
-                        text-[10px] font-medium
-                        placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9]"
+                      className="w-full h-8 border border-[#D9D9D9] rounded-[10px] px-2.5 text-[10px] font-medium placeholder:text-[10px] placeholder:font-medium placeholder:text-[#D9D9D9]"
                       autoComplete="new-password"
                     />
                     {errors.confirmPassword && (
@@ -407,9 +406,10 @@ const SignUp = () => {
                   <div className="flex-grow h-px bg-[#2E2E2E]" />
                 </div>
 
-                {/* Google */}
+                {/* Google button */}
                 <div className="mb-4 w-full">
                   <button
+                    type="button"
                     onClick={() => login()}
                     className="w-full h-10 bg-white border border-[#DADCE0] rounded-[10px] text-sm font-medium flex items-center justify-center gap-2 text-[#2F2F2F] hover:bg-gray-100"
                   >
@@ -418,7 +418,7 @@ const SignUp = () => {
                   </button>
                 </div>
 
-                {/* Sign in */}
+                {/* Sign in link */}
                 <div className="w-full flex justify-center">
                   <p className="text-xs text-[#A6A6A6]">
                     Already have an account?{" "}
@@ -434,13 +434,10 @@ const SignUp = () => {
             </div>
           </div>
 
-          {/* Right side (video card) */}
+          {/* RIGHT SIDE: video */}
           <div className="hidden md:flex flex-1 items-center justify-center">
             <div className="w-full md:max-w-[470px]">
-              <div
-                className="w-full aspect-[607/777] rounded-[24px] overflow-hidden
-                  shadow-[0_4px_15px_rgba(0,0,0,0.25)]"
-              >
+              <div className="w-full aspect-[607/777] rounded-[24px] overflow-hidden shadow-[0_4px_15px_rgba(0,0,0,0.25)]">
                 <video
                   src={signupVideo}
                   autoPlay
