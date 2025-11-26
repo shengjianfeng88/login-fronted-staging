@@ -1,53 +1,120 @@
 import React from 'react';
-import { Gift } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Gift, Sparkle } from 'lucide-react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
+
   const handleSignUpNow = () => {
-    // 保留URL参数，特别是ref参数
     navigate(`/signup${searchParams.toString() ? '?' + searchParams.toString() : ''}`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="max-w-md mx-auto px-6 py-12 text-center">
-        {/* Main invitation message */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            🎉 You're invited to join fAIshion.AI!
-          </h1>
-        </div>
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 font-sans">
 
-        {/* Gift icon */}
-        <div className="mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg border border-gray-100">
-            <Gift size={32} className="text-blue-600" />
+      {/* Main Content Container */}
+      <div className="w-full max-w-3xl flex flex-col items-center">
+
+        {/* 1. Headline */}
+        <h1 className="text-4xl md:text-5xl font-medium tracking-tight text-black mb-10 text-center">
+          You’re invited to fAIshion.AI!
+        </h1>
+
+        {/* 2. Promotional Banner */}
+        <div className="w-full bg-[#F9F8FF] rounded-[32px] relative overflow-hidden px-6 py-16 md:py-20 mb-10">
+
+          {/* --- Left Decoration Group --- */}
+          <div className="absolute -bottom-12 -left-6 md:left-8 md:-bottom-8 transform scale-75 md:scale-100 origin-bottom-left pointer-events-none">
+            <div className="relative">
+              {/* Star Icon */}
+              <Sparkle
+                size={50}
+                strokeWidth={1}
+                className="absolute -top-8 -left-8 text-black -rotate-12 fill-white z-10"
+              />
+
+              {/* White Circle Container */}
+              <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-sm">
+                {/* Gift Icon */}
+                <Gift
+                  size={90}
+                  strokeWidth={0.7}
+                  className="text-indigo-500 rotate-12 translate-y-1"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* --- Right Decoration Group --- */}
+          <div className="absolute -bottom-12 -right-6 md:right-8 md:-bottom-8 transform scale-75 md:scale-100 origin-bottom-right pointer-events-none">
+            <div className="relative">
+              {/* Top Star */}
+              <Sparkle
+                size={50}
+                strokeWidth={1}
+                className="absolute -top-12 right-0 text-black rotate-12 fill-white z-10"
+              />
+              {/* Side Star */}
+              <Sparkle
+                size={45}
+                strokeWidth={1}
+                className="absolute top-10 -left-12 text-black -rotate-12 fill-white z-10"
+              />
+
+              {/* White Circle Container */}
+              <div className="w-36 h-36 bg-white rounded-full flex items-center justify-center shadow-sm">
+                {/* Gift Icon */}
+                <Gift
+                  size={90}
+                  strokeWidth={0.7}
+                  className="text-indigo-500 -rotate-12 translate-y-1"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Banner Text Content */}
+          <div className="relative z-10 text-center max-w-lg mx-auto px-2">
+            <h2 className="text-2xl md:text-3xl text-gray-800 font-medium leading-tight">
+              Get 20 free credits when you join
+            </h2>
+            <h2 className="text-2xl md:text-3xl text-gray-800 font-medium leading-tight">
+              start your try-on journey!
+            </h2>
           </div>
         </div>
 
-        {/* Credits message */}
-        <div className="mb-8">
-          <p className="text-xl font-semibold text-gray-800 mb-2">
-            Get +20 credits when you sign up
+        {/* 3. Subtext Description */}
+        <div className="text-center mb-10 max-w-xl space-y-1 text-gray-600">
+          <p className="text-sm md:text-base leading-relaxed">
+            Discover outfits in seconds with AI-powered try-ons.
+          </p>
+          <p className="text-sm md:text-base leading-relaxed">
+            Explore styles, mix & match with your closet, and share your looks instantly.
           </p>
         </div>
 
-        {/* Welcome message */}
-        <div className="mb-12 text-gray-600">
-          <p className="font-medium mb-1">Your AI shopping assistant awaits!</p>
-          <p>Try on virtually, find your perfect size, and grab the best deals.</p>
+        {/* 4. Sign Up Button */}
+        <div className="w-full max-w-md">
+          <button
+            onClick={handleSignUpNow}
+            className="w-full bg-gray-900 hover:bg-black text-white text-base font-medium py-3.5 px-6 rounded-lg transition-colors shadow-sm"
+          >
+            Sign up
+          </button>
         </div>
 
-        {/* Sign Up Now button */}
-        <button
-          onClick={handleSignUpNow}
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white py-4 px-6 rounded-lg font-medium text-lg transition-colors"
-        >
-          Sign Up Now
-        </button>
+        {/* 5. Footer Link */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-500">
+            Already have an account?{' '}
+            <Link to="/login" className="text-gray-500 underline decoration-1 underline-offset-2 hover:text-gray-900">
+              Log in here.
+            </Link>
+          </p>
+        </div>
+
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import { RootState } from '@/store/store';
 import { logout } from '@/store/features/userSlice';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '@/config/api';
 
 // Add this type near the profileItems array
 export interface ProfileItem {
@@ -51,9 +52,9 @@ const Auth = () => {
   console.log(user);
   const handleLogout = async () => {
     try {
-      const apiUrl = 'https://auth.faishion.ai';
+      const apiUrl = getApiUrl("AUTH_API", "/auth/logout");
 
-      await axios.get(apiUrl + '/auth/logout', { withCredentials: true });
+      await axios.get(`${apiUrl}/auth/logout`, { withCredentials: true });
 
       // Clear access token from localStorage
       localStorage.removeItem('accessToken');

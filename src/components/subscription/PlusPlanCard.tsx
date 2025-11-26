@@ -41,11 +41,11 @@ const PlusPlanCard: React.FC<PlusPlanCardProps> = ({
 
             <hr className="my-4" />
             <p className="text-sm font-medium text-gray-600 mb-6">
-                {isPlansLoading ? "Premium features" : description || "Premium features"}
+                Premium features {billingCycle === "annual" && <span className="text-brand-primary font-bold"> (Save 10% billed yearly)</span>}
             </p>
 
             <div className="space-y-4 flex-grow mb-8">
-                <PlanFeature included={true} text="150 credits / month" />
+                <PlanFeature included={true} text="Maximum monthly try-ons" />
                 <PlanFeature included={true} text="No Queue" />
                 <PlanFeature included={true} text="Full History Access" />
                 <PlanFeature included={true} text="Custom Background Prompts" />
