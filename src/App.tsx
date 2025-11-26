@@ -26,6 +26,7 @@ import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionCancel from './pages/SubscriptionCancel';
 import { OnboardingFlow } from './features/auth/onboarding/OnboardingFlow';
 import ConfirmSignup from './pages/ConfirmSignup';
+import TryOnTester from './pages/TryOn';
 console.log('environment', 'staging.......,,..');
 
 function App() {
@@ -70,6 +71,9 @@ function App() {
               <Route path='/credits-received' element={<CreditsReceived />} />
               <Route path='/subscription/success' element={<SubscriptionSuccess />} />
               <Route path='/subscription/cancel' element={<SubscriptionCancel />} />
+
+
+              <Route path="/tryon" element={<TryOnTester />} />
             </Routes>
           </Suspense>
         </Router>
