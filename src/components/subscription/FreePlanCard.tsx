@@ -16,7 +16,7 @@ const FreePlanCard: React.FC<FreePlanCardProps> = ({ hasPlusPlan, onDowngrade })
             <hr className="my-6" />
             <p className="text-sm font-medium text-gray-600 mb-6">Always free</p>
             <div className="space-y-4 flex-grow mb-8">
-                <PlanFeature included={true} text="10 try-ons / month" />
+                <PlanFeature included={true} text="Limited monthly try-ons" />
                 <PlanFeature included={true} text="Limited History (last 5 items)" />
                 <PlanFeature included={true} text="Basic Prompts" />
                 <PlanFeature included={false} text="Ads Shown" />
