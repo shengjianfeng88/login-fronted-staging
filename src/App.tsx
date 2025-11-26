@@ -25,6 +25,7 @@ import Register from './pages/Register';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionCancel from './pages/SubscriptionCancel';
 import { OnboardingFlow } from './features/auth/onboarding/OnboardingFlow';
+import ConfirmSignup from './pages/ConfirmSignup';
 console.log('environment', 'staging.......,,..');
 
 function App() {

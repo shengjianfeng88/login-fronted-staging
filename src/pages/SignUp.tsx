@@ -159,7 +159,7 @@ const SignUp: React.FC = () => {
     try {
       const requestData: {
         email: string;
-        password: string;
+        password?: string;
         referralCode?: string;
       } = {
         email: formData.email,
