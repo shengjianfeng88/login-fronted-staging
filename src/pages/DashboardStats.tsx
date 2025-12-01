@@ -12,6 +12,7 @@ interface Props {
 
 export default function DashboardStats({ stats }: Props) {
   const vendorLabels: Record<string, string> = {
+    default : "default",
     juguang: "Juguang",
     veoflow: "VeoFlow",
     gemini: "Gemini"
