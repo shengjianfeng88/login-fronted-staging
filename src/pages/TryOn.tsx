@@ -34,6 +34,7 @@ const TryOnTester = () => {
   const [loading, setLoading] = useState(false)
   const [output, setOutput] = useState<string | null>(null)
   const [error, setError] = useState("")
+  const [rating, setRating] = useState(0);
 
   // DASHBOARD METRICS
   const [stats, setStats] = useState<Record<Vendor, VendorStats>>({
@@ -198,149 +199,133 @@ const buildFinalPrompt = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* PERSON IMAGE */}
-          <div
-            className="bg-white shadow rounded-lg p-4 border"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, setPersonImg, setPersonPreview)}
-          >
-            <h2 className="text-xl font-semibold mb-3">Person Image</h2>
+      <div
+        className="bg-white shadow-lg rounded-xl p-5 border border-gray-200 transition hover:shadow-xl"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => handleDrop(e, setPersonImg, setPersonPreview)}
+      >
+        <h2 className="text-xl font-bold mb-3 text-[#555879]">User Image</h2>
 
-            <div className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer min-h-[180px] flex items-center justify-center relative">
+        <div className="border-2 border-dashed border-indigo-300 rounded-lg p-4 text-center cursor-pointer min-h-[200px] flex items-center justify-center bg-indigo-50/30 transition hover:bg-indigo-50 relative">
 
-              {personPreview ? (
-                <div className="relative w-full flex items-center justify-center">
+          {personPreview ? (
+            <div className="relative w-full flex items-center justify-center">
 
-                  {/* IMAGE */}
-                  <img
-                    src={personPreview}
-                    className="max-h-96 w-full object-contain rounded-lg"
-                  />
+            {/* IMAGE */}
+              <img
+                src={personPreview}
+                className="max-h-96 w-full object-contain rounded-lg shadow-md"
+              />
 
-                  {/* REMOVE BUTTON */}
-                  <button
-                    onClick={() => {
-                      setPersonImg(null);
-                      setPersonUrl("");
-                      setPersonPreview(null);
-                    }}
-                    className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded hover:bg-black"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <p className="text-gray-500">Drag & drop an image here</p>
-              )}
+              <button
+                onClick={() => {
+                  setPersonImg(null);
+                  setPersonUrl("");
+                  setPersonPreview(null);
+                }}
+                className="absolute top-2 right-2 bg-red-500 text-white text-xs px-3 py-1 rounded-full shadow hover:bg-red-600 transition"
+              >
+                Remove
+              </button>
             </div>
+          ) : (
+            <p className="text-gray-500">Drag & drop an image here</p>
+          )}
+        </div>
 
-            {/* FILE INPUT */}
-            <input
-              type="file"
-              accept="image/*"
-              className="mt-3 w-full border p-2 rounded"
-                      onChange={(e) =>
-                  handleFileSelect(
-                    e.target.files?.[0] || null,
-                    setPersonImg,
-                    setPersonPreview,
-                    () => setPersonUrl("")  // clear the URL after preview loads
-                  )
-                }
-                      />
-          {/* URL INPUT */}
-          <input
-            type="text"
-            placeholder="image URL"
-            className="mt-3 w-full border p-2 rounded"
-            value={personUrl}
-            onChange={(e) => {
+        {/* FILE INPUT */}
+        <input
+          type="file"
+          accept="image/*"
+          className="mt-3 w-full border p-2 rounded-md focus:ring-2 focus:ring-indigo-400"
+          onChange={(e) =>
+            handleFileSelect(
+              e.target.files?.[0] || null,
+              setPersonImg,
+              setPersonPreview,
+              () => setPersonUrl("")
+            )
+          }
+        />
+
+        {/* URL INPUT */}
+        <input
+          type="text"
+          placeholder="Image URL"
+          className="mt-3 w-full border p-2 rounded-md focus:ring-2 focus:ring-indigo-400"
+          value={personUrl}
+          onChange={(e) => {
             const url = e.target.value.trim()
             setPersonUrl(url)
-
-            // Clear file so URL takes priority
             setPersonImg(null)
-
-            // If it's a valid URL → show preview
-            if (url.startsWith("http")) {
-              setPersonPreview(url)
-            } else {
-              setPersonPreview(null)
-            }
+            setPersonPreview(url.startsWith("http") ? url : null)
           }}
-          />
-          </div>
-
-
-         {/* GARMENT IMAGE */}
-        <div
-          className="bg-white shadow rounded-lg p-4 border"
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => handleDrop(e, setGarmentImg, setGarmentPreview)}
-        >
-          <h2 className="text-xl font-semibold mb-3">Garment Image</h2>
-
-          <div className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer min-h-[180px] flex items-center justify-center relative">
-
-            {garmentPreview ? (
-              <div className="relative w-full flex items-center justify-center">
-
-                    {/* IMAGE */}
-            <img
-              src={garmentPreview}
-              className="max-h-96 w-full object-contain rounded-lg"
-            />
-
-            {/* REMOVE BUTTON */}
-            <button
-              onClick={() => {
-                setGarmentImg(null);
-                setGarmentUrl("");
-                setGarmentPreview(null);
-              }}
-              className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded hover:bg-black"
-            >
-              Remove
-            </button>
-          </div>
-        ) : (
-          <p className="text-gray-500">Drag & drop garment image here</p>
-        )}
+        />
       </div>
 
-      {/* FILE INPUT */}
-      <input
-        type="file"
-        accept="image/*"
-        className="mt-3 w-full border p-2 rounded"
-        onChange={(e) =>
-        handleFileSelect(
-          e.target.files?.[0] || null,
-          setGarmentImg,
-          setGarmentPreview,  
-          () => setGarmentUrl("")   // 🔥 clear URL
-        )
-      }
-      />
+    {/* GARMENT IMAGE */}
+      <div
+        className="bg-white shadow-lg rounded-xl p-5 border border-gray-200 transition hover:shadow-xl"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => handleDrop(e, setGarmentImg, setGarmentPreview)}
+      >
+        <h2 className="text-xl font-bold mb-3 text-[#555879]">Product Image</h2>
 
-    {/* URL INPUT */}
-    <input
-      type="text"
-      placeholder="image URL"
-      className="mt-3 w-full border p-2 rounded"
-      value={garmentUrl}
-      onChange={(e) => {
-        const url = e.target.value.trim()
-        setGarmentUrl(e.target.value)
-        setGarmentImg(null)        // 🔥 clear uploaded file
-        // If it's a valid URL → show preview
-            if (url.startsWith("http")) {
-              setGarmentPreview(url)
-            } else {
-              setGarmentPreview(null)
-            }    // 🔥 clear preview
-      }}
-/>
-    </div>
+        <div className="border-2 border-dashed border-indigo-300 rounded-lg p-4 text-center cursor-pointer min-h-[200px] flex items-center justify-center bg-indigo-50/30 transition hover:bg-indigo-50 relative">
+
+          {garmentPreview ? (
+            <div className="relative w-full flex items-center justify-center">
+
+              <img
+                src={garmentPreview}
+                className="max-h-96 w-full object-contain rounded-lg shadow-md"
+              />
+
+              <button
+                onClick={() => {
+                  setGarmentImg(null);
+                  setGarmentUrl("");
+                  setGarmentPreview(null);
+                }}
+                className="absolute top-2 right-2 bg-red-500 text-white text-xs px-3 py-1 rounded-full shadow hover:bg-red-600 transition"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <p className="text-gray-500">Drag & drop garment image here</p>
+          )}
+        </div>
+
+        {/* FILE INPUT */}
+        <input
+          type="file"
+          accept="image/*"
+          className="mt-3 w-full border p-2 rounded-md focus:ring-2 focus:ring-indigo-400"
+          onChange={(e) =>
+            handleFileSelect(
+              e.target.files?.[0] || null,
+              setGarmentImg,
+              setGarmentPreview,
+              () => setGarmentUrl("")
+            )
+          }
+        />
+
+        {/* URL INPUT */}
+        <input
+          type="text"
+          placeholder="Image URL"
+          className="mt-3 w-full border p-2 rounded-md focus:ring-2 focus:ring-indigo-400"
+          value={garmentUrl}
+          onChange={(e) => {
+            const url = e.target.value.trim()
+            setGarmentUrl(url)
+            setGarmentImg(null)
+            setGarmentPreview(url.startsWith("http") ? url : null)
+          }}
+        />
+      </div>
         </div>
 
         {/* VENDOR SELECTOR */}
@@ -480,42 +465,71 @@ const buildFinalPrompt = () => {
       </div>
 
       {/* RIGHT SIDE — STATS + GENERATED OUTPUT */}
-      <div className="space-y-6">
 
-        <div className="bg-white shadow rounded-lg p-4 border">
-            <h2 className="text-xl font-semibold mb-4">Generated Output</h2>
+<div className="space-y-6">
+  
+    {/* GENERATED OUTPUT CARD */}
+<div className="bg-white shadow-lg rounded-xl p-5 border border-gray-200">
+  <h2 className="text-xl font-semibold mb-4 text-[#555879]">Generated Output</h2>
 
-            {/* Loading skeleton */}
-            {loading && (
-              <div className="w-full h-64 bg-gray-200 animate-pulse rounded"></div>
-            )}
+  {/* Preview Zone (same style as input cards) */}
+  <div className="
+    border-2 border-dashed border-indigo-300 rounded-lg
+    p-4 text-center min-h-[200px]
+    flex items-center justify-center bg-indigo-50/30
+  ">
+    {loading && (
+      <div className="w-full h-64 bg-gray-200 animate-pulse rounded"></div>
+    )}
 
-            {/* ❌ Error message */}
-            {!loading && error && (
-              <p className="text-red-500 text-center font-semibold whitespace-pre-line">
-                {error}
-              </p>
-            )}
+    {!loading && error && (
+      <p className="text-red-500 text-center font-semibold whitespace-pre-line">{error}</p>
+    )}
 
-            {/* ✔ Output image */}
-            {!loading && !error && output && (
-              <img
-                src={output}
-                className="max-h-96 w-full object-contain rounded-lg"
-              />
-            )}
+    {!loading && !error && output && (
+      <img
+        src={output}
+        className="max-h-96 w-full object-contain rounded-lg shadow-md"
+      />
+    )}
 
-            {/* ⛔ No output yet */}
-            {!loading && !error && !output && (
-              <p className="text-gray-400 text-center">No output yet</p>
-            )}
+    {!loading && !error && !output && (
+      <p className="text-gray-400">No output yet</p>
+    )}
+  </div>
+
+  {/* Footer area — looks like other cards */}
+  <div className="mt-4 w-full text-center">
+
+    {/* When output exists → show rating */}
+    {output ? (
+      <>
+        <p className="text-gray-600 mb-2">Rate this result</p>
+        <div className="flex justify-center gap-2">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              onClick={() => setRating(star)}
+              className={`text-2xl ${
+                rating >= star ? "text-yellow-400" : "text-gray-300"
+              } hover:text-yellow-500 transition`}
+            >
+              ★
+            </button>
+          ))}
         </div>
+      </>
+    ) : (
+      // Placeholder to keep card height balanced
+      <div className="text-gray-300 text-sm italic">⭐ Rating will appear after generation</div>
+    )}
+  </div>
+</div>
 
-        <DashboardStats stats={stats} />  
+  <DashboardStats stats={stats} />
 
-        
+</div>
 
-      </div>
     </div>
 
     {/* LOADING OVERLAY */}
