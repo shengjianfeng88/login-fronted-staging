@@ -29,6 +29,7 @@ const TryOnTester = () => {
   const [filterPrompt, setFilterPrompt] = useState("")
   const [enhancePrompt, setEnhancePrompt] = useState("")
   const [customPrompt, setCustomPrompt] = useState("")
+  const [promptMode, setPromptMode] = useState("custom")
 
   const [loading, setLoading] = useState(false)
   const [output, setOutput] = useState<string | null>(null)
@@ -92,20 +93,30 @@ const TryOnTester = () => {
     }))
   }
 
-  /** 🔥 BUILD FINAL PROMPT */
-  const buildFinalPrompt = () => {
-    const parts = []
-    if (customPrompt.trim())   return `custom_prompt: ${customPrompt.trim().replace(/\n+/g, " ")}`
+  /** BUILD FINAL PROMPT */
+const buildFinalPrompt = () => {
+    const parts = [];
     
-    if (vendor.trim() && vendor !== "default") {
-        parts.push(`provider: ${vendor.trim()}`)
-    }     
-    if (tryonPrompt.trim()) parts.push(`tryon_prompt: ${tryonPrompt.trim()}`)
-    if (backgroundPrompt.trim()) parts.push(`background: ${backgroundPrompt.trim()}`)
-    if (filterPrompt.trim()) parts.push(`filter: ${filterPrompt.trim()}`)
-    if (enhancePrompt.trim()) parts.push(`enhance: ${enhancePrompt.trim()}`)
+    // 1. CHECK THE MODE FIRST (Explicit Logic)
+    if (promptMode === 'custom') {
+       // We only use custom prompt if the user is explicitly in Custom Mode
+       if (!customPrompt.trim()) return ""; // Handle empty case
+        parts.push(`custom_prompt: ${customPrompt.trim().replace(/\n+/g, " ")}`);
+    }
 
-    return parts.join(" | ")
+    // 2. STANDARD MODE (Assembler Logic)
+   else{
+    if (tryonPrompt.trim()) parts.push(`tryon_prompt: ${tryonPrompt.trim()}`);
+    if (backgroundPrompt.trim()) parts.push(`background: ${backgroundPrompt.trim()}`);
+    if (filterPrompt.trim()) parts.push(`filter: ${filterPrompt.trim()}`);
+    if (enhancePrompt.trim()) parts.push(`enhance: ${enhancePrompt.trim()}`);
+   }
+   //(Optional) Include vendor if your backend needs it inside the prompt string
+   if (vendor.trim() && vendor !== "default") {
+        parts.push(`provider: ${vendor.trim()}`);
+    }   
+
+    return parts.join(" | ");
   }
 
   // TRY-ON ACTION
@@ -126,14 +137,13 @@ const TryOnTester = () => {
         return
       }
 
-      updateStats(vendor, "success")
-
+      
+      
       const payload = {
-        provider: vendor,
         face: finalPerson,
         model: finalGarment,
         prompt: buildFinalPrompt(),
-        product_info: { vendor }
+        product_info: { garmentUrl }
       }
       
       const res = await fetch("https://tryon-images.faishion.ai/test/tryon", {
@@ -156,12 +166,13 @@ const TryOnTester = () => {
       let finalImage = null
 
       if (data.result_image_url) {
+        updateStats(vendor, "success")
         finalImage = data.result_image_url
       } else if (data.image) {
         finalImage = `data:image/png;base64,${data.image}`
       }
 
-setOutput(finalImage)
+    setOutput(finalImage)
 
     } catch (err) {
       setError("Error generating try-on.")
@@ -239,7 +250,7 @@ setOutput(finalImage)
           {/* URL INPUT */}
           <input
             type="text"
-            placeholder="Or paste image URL"
+            placeholder="image URL"
             className="mt-3 w-full border p-2 rounded"
             value={personUrl}
             onChange={(e) => {
@@ -314,7 +325,7 @@ setOutput(finalImage)
     {/* URL INPUT */}
     <input
       type="text"
-      placeholder="Or paste image URL"
+      placeholder="image URL"
       className="mt-3 w-full border p-2 rounded"
       value={garmentUrl}
       onChange={(e) => {
@@ -347,61 +358,117 @@ setOutput(finalImage)
           </select>
         </div>
 
-        {/* PROMPT BUILDER */}
-        <div className="bg-white shadow rounded-lg p-4 border space-y-4">
-          <h2 className="text-xl font-semibold">Prompt Builder</h2>
+      
+{/* PROMPT BUILDER */}
+<div className="bg-white shadow rounded-lg p-4 border mb-4">
+  
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-xl font-semibold">Prompt Builder</h2>
+    
+    {/* TOGGLE SWITCH */}
+    <div className="bg-gray-100 p-1 rounded-lg flex text-sm">
+      
+      {/* STANDARD BUTTON (Blue when active) */}
+      <button
+        onClick={() => setPromptMode('standard')}
+        className={`px-4 py-1.5 rounded-md transition-all ${
+          promptMode === 'standard' 
+            ? 'bg-blue-600 text-white shadow-sm'   // Active Style
+            : 'text-gray-500 hover:text-gray-900'  // Inactive Style
+        }`}
+      >
+        Standard
+      </button>
+      {/* CUSTOM BUTTON (Indigo when active) */}
+      <button
+        onClick={() => setPromptMode('custom')}
+        className={`px-4 py-1.5 rounded-md transition-all ${
+          promptMode === 'custom' 
+            ? 'bg-amber-500 text-white shadow-sm' 
+            : 'text-gray-500 hover:text-gray-900'
+        }`}
+      >
+        Custom Mode
+      </button>
+    </div>
+  </div>
 
-          <div>
-            <label className="font-semibold">Try-On Instructions</label>
-            <textarea
-              className="w-full border p-2 rounded"
-              placeholder="preserve identity, maintain pose..."
-              value={tryonPrompt}
-              onChange={(e) => setTryonPrompt(e.target.value)}
-            />
-          </div>
+  {/* === STANDARD MODE VIEW === */}
+  {promptMode === 'standard' && (
+    <div className="space-y-4 animate-in fade-in duration-200">
+      {/* Helper Text */}
+      <div className="bg-blue-50 border border-blue-100 p-3 rounded-md text-sm text-blue-800">
+        We will automatically assemble the prompt: 
+        <span className="font-mono text-xs ml-1 block mt-1">
+          [Instructions] + [Background] + [Filter] + [Enhance]
+        </span>
+      </div>
 
-          <div>
-            <label className="font-semibold">Background</label>
-            <input
-              className="w-full border p-2 rounded"
-              placeholder="e.g., beach, studio"
-              value={backgroundPrompt}
-              onChange={(e) => setBackgroundPrompt(e.target.value)}
-            />
-          </div>
+      <div>
+        <label className="font-semibold block mb-1">Try-On Instructions</label>
+        <textarea
+          className="w-full border p-2 rounded focus:ring-2 focus:ring-black outline-none"
+          placeholder="eg: Create a tryon showing the person from the first image....."
+          value={tryonPrompt}
+          onChange={(e) => setTryonPrompt(e.target.value)}
+          rows={2}
+        />
+      </div>
 
-          <div>
-            <label className="font-semibold">Filter</label>
-            <input
-              className="w-full border p-2 rounded"
-              placeholder="cinematic, soft light..."
-              value={filterPrompt}
-              onChange={(e) => setFilterPrompt(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="font-semibold">Enhance</label>
-            <input
-              className="w-full border p-2 rounded"
-              placeholder="boost clarity, increase sharpness..."
-              value={enhancePrompt}
-              onChange={(e) => setEnhancePrompt(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="font-semibold">Custom Prompt (Overrides All)</label>
-            <textarea
-              className="w-full border p-2 rounded bg-yellow-50"
-              placeholder="If filled, this replaces everything above"
-              value={customPrompt}
-              onChange={(e) => setCustomPrompt(e.target.value)}
-            />
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label className="font-semibold text-sm block mb-1">Background</label>
+          <input
+            className="w-full border p-2 rounded focus:ring-2 focus:ring-black outline-none"
+            placeholder="e.g., beach"
+            value={backgroundPrompt}
+            onChange={(e) => setBackgroundPrompt(e.target.value)}
+          />
         </div>
 
+        <div>
+          <label className="font-semibold text-sm block mb-1">Filter</label>
+          <input
+            className="w-full border p-2 rounded focus:ring-2 focus:ring-black outline-none"
+            placeholder="e.g., cinematic"
+            value={filterPrompt}
+            onChange={(e) => setFilterPrompt(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="font-semibold text-sm block mb-1">Enhance</label>
+          <input
+            className="w-full border p-2 rounded focus:ring-2 focus:ring-black outline-none"
+            placeholder="e.g., 4k or aspect ratio 1:1 , 4:3"
+            value={enhancePrompt}
+            onChange={(e) => setEnhancePrompt(e.target.value)}
+          />
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* === CUSTOM MODE VIEW === */}
+  {promptMode === 'custom' && (
+    <div className="space-y-4 animate-in fade-in duration-200">
+      {/* Warning Text */}
+      <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-md text-sm text-yellow-800">
+        <strong>Custom mode:</strong>  You must  include Try on instruction, background, filters or other requirements here.
+      </div>
+
+      <div>
+        <label className="font-semibold block mb-1">Custom Prompt</label>
+        <textarea
+          className="w-full border-2 border-yellow-300 bg-yellow-50/30 p-3 rounded min-h-[200px] focus:ring-2 focus:ring-yellow-500 outline-none font-mono text-sm"
+          placeholder="Enter your full raw prompt here..."
+          value={customPrompt}
+          onChange={(e) => setCustomPrompt(e.target.value)}
+        />
+      </div>
+    </div>
+  )}
+  </div>
         {/* TRY ON BUTTON */}
         <button
           onClick={handleTryOn}
@@ -414,8 +481,6 @@ setOutput(finalImage)
 
       {/* RIGHT SIDE — STATS + GENERATED OUTPUT */}
       <div className="space-y-6">
-
-        <DashboardStats stats={stats} />  
 
         <div className="bg-white shadow rounded-lg p-4 border">
             <h2 className="text-xl font-semibold mb-4">Generated Output</h2>
@@ -445,6 +510,10 @@ setOutput(finalImage)
               <p className="text-gray-400 text-center">No output yet</p>
             )}
         </div>
+
+        <DashboardStats stats={stats} />  
+
+        
 
       </div>
     </div>
