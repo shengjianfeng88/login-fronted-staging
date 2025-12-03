@@ -452,6 +452,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
 export interface ResultsProps {
   userImages: string[];
   clothingImages: string[];
+  prompt:string;
   testResults: TestResult[];
   setTestResults: React.Dispatch<React.SetStateAction<TestResult[]>>;
   selectedRowKeys: React.Key[];
@@ -463,6 +464,7 @@ export interface ResultsProps {
 const ResultsPage: React.FC<ResultsProps> = ({
   userImages,
   clothingImages,
+  prompt,
   testResults,
   setTestResults,
   selectedRowKeys,
@@ -474,7 +476,7 @@ const ResultsPage: React.FC<ResultsProps> = ({
   const [isCancelling, setIsCancelling] = useState(false);
   const navigate = useNavigate();
   const abortControllerRef = useRef<AbortController | null>(null);
-
+  console.log(prompt)
   useEffect(() => {
     // 只在 testResults 为空时初始化
     if (testResults.length === 0) {
@@ -545,7 +547,8 @@ const ResultsPage: React.FC<ResultsProps> = ({
           const response = await tryonApi.startTryon(
             test.userImage,
             test.clothingImage,
-            abortControllerRef.current?.signal
+            prompt,
+            abortControllerRef.current?.signal,
           );
 
           // Add debug information
@@ -660,10 +663,10 @@ const ResultsPage: React.FC<ResultsProps> = ({
   // 处理上传图片按钮点击
   const handleUploadClick = () => {
     Modal.confirm({
-      title: '确认上传新图片',
-      content: '上传新图片将清空当前的任务列表，是否继续？',
-      okText: '确认',
-      cancelText: '取消',
+      title: 'Confirm Uploading New Images',
+      content: 'Uploading new images will clear the current task list. Do you want to continue？',
+      okText: 'Confirm',
+      cancelText: 'Cancel',
       onOk: () => {
         // 清空所有状态
         setTestResults([]);
@@ -781,7 +784,7 @@ const ResultsPage: React.FC<ResultsProps> = ({
               onClick={handleViewHistory}
               className='!rounded-button whitespace-nowrap'
             >
-              查看历史记录
+              View history
             </Button>
             <Button
               type='primary'
@@ -790,7 +793,7 @@ const ResultsPage: React.FC<ResultsProps> = ({
               onClick={handleSaveResults}
               className='!rounded-button whitespace-nowrap'
             >
-              保存结果
+              Save results
             </Button>
           </div>
         </div>

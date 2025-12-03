@@ -18,16 +18,26 @@ const { Dragger } = Upload;
 
 interface UploadProps {
   onImagesSelected: (userImages: string[], clothingImages: string[]) => void;
+  finalPrompt:string;
+  setFinalPrompt:React.Dispatch<React.SetStateAction<string>>;
 }
 
-const UploadPage: React.FC<UploadProps> = ({ onImagesSelected }) => {
+const UploadPage: React.FC<UploadProps> = ({ 
+  onImagesSelected,
+  finalPrompt,
+  setFinalPrompt,
+  }) => {
   const [userImages, setUserImages] = useState<string[]>([]);
   const [clothingImages, setClothingImages] = useState<string[]>([]);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
   const [uploadType, setUploadType] = useState<'user' | 'clothing'>('user');
   const [uploading, setUploading] = useState(false);
+  const[tryonPrompt, setTryonPrompt] = useState("")
+  const[backgroundPrompt, setBackgroundPrompt] = useState("")
+  type Vendor = "default" | "juguang" | "veoflow" | "gemini"
+  const [vendor, setVendor] = useState<Vendor>("default")
   const navigate = useNavigate();
-
+  
   const handleUploadUser = () => {
     setUploadType('user');
     setUploadModalVisible(true);
@@ -49,6 +59,13 @@ const UploadPage: React.FC<UploadProps> = ({ onImagesSelected }) => {
   const handleStartCombinations = () => {
     if (userImages.length > 0 && clothingImages.length > 0) {
       onImagesSelected(userImages, clothingImages);
+     const parts = [];
+     if (tryonPrompt.trim()) parts.push(`tryon_prompt : ${tryonPrompt.trim()}`);
+     if (backgroundPrompt.trim()) parts.push(`background : ${backgroundPrompt.trim()}`);
+     if (vendor.trim() && vendor !== "default") {
+        parts.push(`provider: ${vendor.trim()}`);
+    } 
+     setFinalPrompt(parts.join(" | "));
       navigate('/auto-test/results');
     } else {
       message.warning('Please upload at least one user image and one clothing image');
@@ -225,6 +242,48 @@ const UploadPage: React.FC<UploadProps> = ({ onImagesSelected }) => {
             {userImages.length * clothingImages.length} combinations)
           </Button>
         </div>
+
+        <div className="space-y-4 animate-in fade-in duration-200">
+      {/* Helper Text */}
+      <div>
+        <label className="font-semibold block mb-1">Prompt</label>
+        <textarea
+          className="w-full border p-2 rounded focus:ring-2 focus:ring-black outline-none"
+          placeholder="eg: Create a tryon showing the person from the first image....."
+          value={tryonPrompt}
+          onChange={(e) => setTryonPrompt(e.target.value)}
+          rows={2}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label className="font-semibold text-sm block mb-1">Background</label>
+          <input
+            className="w-full border p-2 rounded focus:ring-2 focus:ring-black outline-none"
+            placeholder="e.g., beach"
+            value={backgroundPrompt}
+            onChange={(e) => setBackgroundPrompt(e.target.value)}
+          />
+        </div>
+      </div>
+    </div>
+    
+    {/* VENDOR SELECTOR */}
+        <div>
+          <label className="font-semibold">Vendor</label>
+          <select
+            className="w-full border p-3 rounded mt-2"
+            value={vendor}
+            onChange={(e) => setVendor(e.target.value as Vendor)}
+          >
+            <option value="default">Default (Auto-Select)</option>
+            <option value="juguang">Juguang</option>
+            <option value="veoflow">VeoFlow</option>
+            <option value="gemini">Google Gemini</option>
+          </select>
+        </div>
+
       </div>
       <Modal
         title={`Upload ${uploadType === 'user' ? 'User' : 'Clothing'} Images`}
