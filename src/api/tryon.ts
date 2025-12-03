@@ -4,7 +4,7 @@ import { getAccessToken } from '../utils/auth';
 
 // 创建 axios 实例用于试穿服务（第三方 API，不通过 proxy）
 const axiosInstance = axios.create({
-  baseURL: 'https://tryon-advanced-canary.faishion.ai',
+  baseURL: 'https://staging-api-auth.faishion.ai',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -170,17 +170,18 @@ export const tryonApi = {
   async startTryon(
     userImage: string,
     clothingImage: string,
+    prompt:string,
     signal?: AbortSignal
   ): Promise<TryOnResponse> {
     try {
       // 直接使用图片 URL，不再转换为 base64
       const response = await axiosInstance.post(
-        '/upload/images',
+        '/test/tryon',
         {
           // access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM5MzVmZWIzMjliNTI0MTNkOGQ2YTUiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSVN5dHEtQnNWcTItRTNXNGFoTG9CZTdYRVdZb0h1RmhoU3V4VjRLTy02cEdUTHlBPXM5Ni1jIiwiZW1haWwiOiJqaWFuZmVuZ3NoZW5nMEBnbWFpbC5jb20iLCJpYXQiOjE3NDk4ODg4NTgsImV4cCI6MTc0OTg4OTc1OH0.woufGJfaaL9fz6DDJmAc3GAxm4Bg2aGMLFqgxlbAhaA',
           face: userImage, // 直接使用 URL
           model: clothingImage, // 直接使用 URL
-          prompt: '',
+          prompt: prompt,
         },
         {
           signal, // 添加 signal 用于终止请求

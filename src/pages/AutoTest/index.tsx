@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import UploadPage from './Upload';
 import ResultsPage from './Results';
@@ -11,7 +11,8 @@ const AutoTest: React.FC = () => {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
-
+  
+  const [finalPrompt, setFinalPrompt] = useState("");
   const handleImagesSelected = (
     newUserImages: string[],
     newClothingImages: string[]
@@ -29,16 +30,21 @@ const AutoTest: React.FC = () => {
             element={<Navigate to='/auto-test/upload' replace />}
           />
           <Route
-            path='/upload'
-            element={<UploadPage onImagesSelected={handleImagesSelected} />}
+            path='upload'
+            element={<UploadPage 
+                        onImagesSelected={handleImagesSelected}
+                        finalPrompt = {finalPrompt}
+                        setFinalPrompt = {setFinalPrompt}
+                         />}
           />
           <Route
-            path='/results'
+            path='results'
             element={
               userImages.length > 0 && clothingImages.length > 0 ? (
                 <ResultsPage
                   userImages={userImages}
                   clothingImages={clothingImages}
+                  prompt = {finalPrompt}
                   testResults={testResults}
                   setTestResults={setTestResults}
                   selectedRowKeys={selectedRowKeys}
