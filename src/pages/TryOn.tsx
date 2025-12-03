@@ -293,7 +293,7 @@ const buildFinalPrompt = () => {
               </button>
             </div>
           ) : (
-            <p className="text-gray-500">Drag & drop garment image here</p>
+            <p className="text-gray-500">Drag & & drop garment image here</p>
           )}
         </div>
 
