@@ -20,38 +20,7 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-    const [progress, setProgress] = useState(0);
   
-    useEffect(() => {
-      const video = videoRef.current;
-      if (!video) return;
-  
-      video.muted = true; // required for autoplay
-      video.play().catch(() => console.log("Autoplay blocked"));
-  
-      const updateProgress = () => {
-        if (!video.duration) return;
-        const percent = (video.currentTime / video.duration) * 100;
-        setProgress(percent);
-      };
-  
-      video.addEventListener("timeupdate", updateProgress);
-      return () => video.removeEventListener("timeupdate", updateProgress);
-    }, []);
-  
-    const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!videoRef.current) return;
-  
-      const rect = e.currentTarget.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const width = rect.width;
-  
-      const newTime =
-        (clickX / width) * (videoRef.current.duration || 0);
-  
-      videoRef.current.currentTime = newTime;
-    };
 
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
@@ -137,28 +106,21 @@ export const UploadPhotoStep: React.FC<UploadPhotoStepProps> = () => {
                   md:max-w-[240px]
                   lg:max-w-[260px]
                   aspect-[300/546]
-                  rounded-[24px] overflow-hidden relative
+                  rounded-[24px] overflow-hidden
                   border-[4px] border-[#6A5ACD]
                 "
               >
                 <video
-                  ref={videoRef}
+                
                   src={uploadVideo}
                   autoPlay
                   loop
                   muted
+                  controls
                   playsInline
                   className="w-full h-full object-cover"
                 />
-                <div
-          className="absolute bottom-0 left-0 w-full h-2 bg-black/30 cursor-pointer"
-          onClick={handleSeek}
-        >
-          <div
-            className="h-full bg-red-500" 
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
+
               </div>
             </div>
 

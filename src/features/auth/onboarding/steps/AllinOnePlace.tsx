@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import chatbotVideo from "@/assets/onboarding/Try-on History.mp4";
 
 interface AllinOnePlaceProps {
@@ -7,38 +7,6 @@ interface AllinOnePlaceProps {
 }
 
 export const AllinOnePlaceProps: React.FC<AllinOnePlaceProps> = () => {
-   const videoRef = useRef<HTMLVideoElement | null>(null);
-          const [progress, setProgress] = useState(0);
-        
-          useEffect(() => {
-            const video = videoRef.current;
-            if (!video) return;
-        
-            video.muted = true; // required for autoplay
-            video.play().catch(() => console.log("Autoplay blocked"));
-        
-            const updateProgress = () => {
-              if (!video.duration) return;
-              const percent = (video.currentTime / video.duration) * 100;
-              setProgress(percent);
-            };
-        
-            video.addEventListener("timeupdate", updateProgress);
-            return () => video.removeEventListener("timeupdate", updateProgress);
-          }, []);
-        
-          const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-            if (!videoRef.current) return;
-        
-            const rect = e.currentTarget.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const width = rect.width;
-        
-            const newTime =
-              (clickX / width) * (videoRef.current.duration || 0);
-        
-            videoRef.current.currentTime = newTime;
-          };
   return (
     <div className="flex flex-col w-full h-full">
      
@@ -71,22 +39,15 @@ export const AllinOnePlaceProps: React.FC<AllinOnePlaceProps> = () => {
       "
     >
             <video
-            ref={videoRef}
               src={chatbotVideo}
               className="w-full h-full object-cover"
               autoPlay
               loop
               muted
               playsInline
+              controls
             />
-             <div
-          className="absolute bottom-0 left-0 w-full h-2 bg-black/30 cursor-pointer"
-          onClick={handleSeek}
-        >
-          <div
-            className="h-full bg-red-500" 
-            style={{ width: `${progress}%` }}
-          ></div></div>
+      
           </div>
         </div>
       </section>

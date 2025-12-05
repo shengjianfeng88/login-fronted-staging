@@ -188,6 +188,7 @@ export const HowItWorksStep: React.FC<HowItWorksStepProps> = ({
     animate="enter"
     exit="exit"
     transition={smoothTransition}
+    controls
                   />
                 </AnimatePresence>
               </div>

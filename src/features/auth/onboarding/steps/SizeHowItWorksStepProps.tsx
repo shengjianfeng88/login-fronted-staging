@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import step1Media from "@/assets/onboarding/Size-Recommendation-Step1.mp4";
 import step2Media from "@/assets/onboarding/Size-Recommendation-Step2.mp4";
 import step3Media from "@/assets/onboarding/Size-Recommendation-Step3.mp4";
@@ -55,39 +55,6 @@ export const SizeHowItWorksStep: React.FC<SizeHowItWorksStepProps> = ({
   onReachBottom,
 }) => {
   const rootRef = useRef<HTMLDivElement | null>(null);
-
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-      const [progress, setProgress] = useState(0);
-    
-      useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-    
-        video.muted = true; // required for autoplay
-        video.play().catch(() => console.log("Autoplay blocked"));
-    
-        const updateProgress = () => {
-          if (!video.duration) return;
-          const percent = (video.currentTime / video.duration) * 100;
-          setProgress(percent);
-        };
-    
-        video.addEventListener("timeupdate", updateProgress);
-        return () => video.removeEventListener("timeupdate", updateProgress);
-      }, []);
-    
-      const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!videoRef.current) return;
-    
-        const rect = e.currentTarget.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const width = rect.width;
-    
-        const newTime =
-          (clickX / width) * (videoRef.current.duration || 0);
-    
-        videoRef.current.currentTime = newTime;
-      };
 
    useEffect(() => {
       if (!onReachBottom) return;
@@ -158,22 +125,15 @@ export const SizeHowItWorksStep: React.FC<SizeHowItWorksStepProps> = ({
                 <div className="w-full md:w-[52%] flex justify-center">
                   <div className="relative w-full max-w-[562px] aspect-[562/351] rounded-[18px] border-[6px] border-[#6A5ACD] bg-white shadow-[0_4px_14px_rgba(0,0,0,0.25)] overflow-hidden">
                     <video
-                     ref={videoRef}
                       src={step.media}
                       className="w-full h-full object-cover"
                       autoPlay
                       loop
                       muted
                       playsInline
+                      controls
                     />
-                    <div
-          className="absolute bottom-0 left-0 w-full h-2 bg-black/30 cursor-pointer"
-          onClick={handleSeek}
-        >
-          <div
-            className="h-full bg-red-500" 
-            style={{ width: `${progress}%` }}
-          ></div></div>
+                    
           
                   </div>
                 </div>
