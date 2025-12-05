@@ -123,7 +123,7 @@ export const SizeHowItWorksStep: React.FC<SizeHowItWorksStepProps> = ({
 
                 {/* Video / image card */}
                 <div className="w-full md:w-[52%] flex justify-center">
-                  <div className="w-full max-w-[562px] aspect-[562/351] rounded-[18px] border-[6px] border-[#6A5ACD] bg-white shadow-[0_4px_14px_rgba(0,0,0,0.25)] overflow-hidden">
+                  <div className="relative w-full max-w-[562px] aspect-[562/351] rounded-[18px] border-[6px] border-[#6A5ACD] bg-white shadow-[0_4px_14px_rgba(0,0,0,0.25)] overflow-hidden">
                     <video
                       src={step.media}
                       className="w-full h-full object-cover"
@@ -131,7 +131,10 @@ export const SizeHowItWorksStep: React.FC<SizeHowItWorksStepProps> = ({
                       loop
                       muted
                       playsInline
+                      controls
                     />
+                    
+          
                   </div>
                 </div>
               </section>

@@ -50,6 +50,7 @@ export const ShortcutProps: React.FC<ShortcutProps> = ({ onBack, onNext }) => {
     (f) => f.id === "chatbot" || f.id === "size"
   );
 
+
   return (
     <div className="flex flex-col w-full h-full bg-white">
       <section className="w-full flex flex-col items-center">
@@ -120,6 +121,7 @@ export const ShortcutProps: React.FC<ShortcutProps> = ({ onBack, onNext }) => {
                   loop
                   muted
                   playsInline
+                  controls
                 />
               </div>
             </div>

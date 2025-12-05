@@ -188,6 +188,7 @@ export const HowItWorksStep: React.FC<HowItWorksStepProps> = ({
     animate="enter"
     exit="exit"
     transition={smoothTransition}
+    controls
                   />
                 </AnimatePresence>
               </div>
@@ -245,11 +246,18 @@ export const HowItWorksStep: React.FC<HowItWorksStepProps> = ({
                 {HOW_IT_WORKS_STEPS.map((step, i) => (
                   <span
                     key={step.id}
-                    className={`h-[4px] rounded-full transition-all ${
+                    className={`h-[4px] rounded-full transition-all cursor-pointer ${
                       i === activeIndex
                         ? "w-[32px] bg-black"
                         : "w-[18px] bg-[#DADADA]"
                     }`}
+
+                     onClick={() => {
+        const targetEl = triggerRefs.current[i];
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }}
                   />
                 ))}
               </div>
@@ -265,10 +273,7 @@ export const HowItWorksStep: React.FC<HowItWorksStepProps> = ({
                 "
               >
                 <span>Scroll to continue</span>
-                <span
-                  aria-hidden
-                  className="inline-block h-2.5 w-2.5 border-l-[3.5px] border-b-[3.5px] border-[#767676] rotate-[-45deg]"
-                />
+                
               </div>
             </div>
           </div>
