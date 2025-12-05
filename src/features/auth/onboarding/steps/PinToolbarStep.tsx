@@ -1,11 +1,46 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import pinToolbarVideo from "@/assets/onboarding/PinToolbarStep.mp4";
 
 interface PinToolbarStepProps {
   onNext: () => void;
 }
 
+
+
 export const PinToolbarStep: React.FC<PinToolbarStepProps> = ({ onNext }) => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true; // required for autoplay
+    video.play().catch(() => console.log("Autoplay blocked"));
+
+    const updateProgress = () => {
+      if (!video.duration) return;
+      const percent = (video.currentTime / video.duration) * 100;
+      setProgress(percent);
+    };
+
+    video.addEventListener("timeupdate", updateProgress);
+    return () => video.removeEventListener("timeupdate", updateProgress);
+  }, []);
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!videoRef.current) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+
+    const newTime =
+      (clickX / width) * (videoRef.current.duration || 0);
+
+    videoRef.current.currentTime = newTime;
+  };
+
   return (
     <div
       className="
@@ -38,15 +73,32 @@ export const PinToolbarStep: React.FC<PinToolbarStepProps> = ({ onNext }) => {
 
       {/* RIGHT: responsive video with fixed aspect ratio */}
       <div className="flex w-full md:flex-1 items-center justify-center">
-        <div className="w-full max-w-[706px] aspect-[706/507] flex items-center justify-center">
-          <video
-            src={pinToolbarVideo}
-            className="w-full h-full object-contain rounded-[42px]"
-            autoPlay
-            loop
-            muted
-            playsInline
-          />
+        <div className="w-full max-w-[706px] relative">
+
+          {/* VIDEO WITH ASPECT RATIO */}
+          <div className="aspect-[706/507] w-full relative rounded-[42px] overflow-hidden">
+            <video
+              ref={videoRef}
+              src={pinToolbarVideo}
+              className="w-full h-full object-contain"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+
+            {/* OVERLAY PROGRESS BAR */}
+            <div
+              className="absolute bottom-0 left-0 w-full h-2 bg-black/30 cursor-pointer"
+              onClick={handleSeek}
+            >
+              <div
+                className="h-full bg-red-500"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
