@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { OnboardingHeader } from "./OnboardingTopBar";
 import { PinToolbarStep } from "./steps/PinToolbarStep";
 import { ChooseViewerStep } from "./steps/ChooseViewerStep";
@@ -10,6 +10,7 @@ import { SizeHowItWorksStep } from "./steps/SizeHowItWorksStepProps";
 import { AllinOnePlaceProps } from "./steps/AllinOnePlace";
 import { ShortcutProps } from "./steps/Shortcut";
 import { DoneStep } from "./steps/DoneStepProps";
+import { useNavigate } from "react-router-dom";
 
 const scrollToOnboardingTop = () => {
   window.scrollTo({ top: 0, behavior: "auto" });
@@ -27,45 +28,29 @@ type Step =
   | "ShortcutProps"
   | "DoneStep";
 
-const STEP_ORDER: Step[] = [
-  "pinToolbar",
-  "chooseViewer",
-  "sampleModel",
-  "uploadOwnPhoto",
-  "howItWorks",
-  "SizeHowItWorksStep",
-  "chatbot",
-  "AllinOnePlaceProps",
-  "ShortcutProps",
-  "DoneStep",
-];
-
-const STEPS_WITH_CONTROLS = new Set<Step>([
-  "sampleModel",
-  "uploadOwnPhoto",
-  "howItWorks",
-  "SizeHowItWorksStep",
-  "chatbot",
-  "AllinOnePlaceProps",
-  "ShortcutProps",
-  "DoneStep",
-]);
-
 export const OnboardingFlow: React.FC = () => {
   const [step, setStep] = useState<Step>("pinToolbar");
   const [skipReady, setSkipReady] = useState(false);
   const goDoneStep = () => setStep("DoneStep");
 
-  const stepIndex = useMemo(() => STEP_ORDER.indexOf(step), [step]);
-  const progress = stepIndex <= 0 ? 0 : stepIndex / (STEP_ORDER.length - 1);
-  const showControls = STEPS_WITH_CONTROLS.has(step);
+  const stepHasStepper =
+    step !== "sampleModel" &&
+    step !== "uploadOwnPhoto" &&
+    step !== "DoneStep";
+
+  const stepHasControls = step !== "DoneStep";
 
    useEffect(() => {
     setSkipReady(false);
   }, [step]);
 
+  const navigate = useNavigate();
+
+
   const backHandler = () => {
     switch (step) {
+      case "chooseViewer":
+        return setStep("pinToolbar")
       case "sampleModel":
       case "uploadOwnPhoto":
         return setStep("chooseViewer");
@@ -81,8 +66,8 @@ export const OnboardingFlow: React.FC = () => {
         return setStep("chatbot");
       case "ShortcutProps":
         return setStep("AllinOnePlaceProps");
-      case "DoneStep":
-        return setStep("ShortcutProps");
+      case "pinToolbar":
+        navigate("/signup"); return;
       default:
         return;
     }
@@ -90,6 +75,10 @@ export const OnboardingFlow: React.FC = () => {
 
   const nextHandler = () => {
     switch (step) {
+      case "pinToolbar":
+        return setStep("chooseViewer")
+      case "chooseViewer":
+        return setStep("howItWorks")
       case "sampleModel":
       case "uploadOwnPhoto":
         scrollToOnboardingTop();
@@ -122,19 +111,23 @@ export const OnboardingFlow: React.FC = () => {
   step === "DoneStep" ? undefined : nextHandler;
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen">
       <OnboardingHeader
-        progress={progress}
-        showControls={showControls}
-        onBack={backHandler}
+        activeStepId={step}
+        showControls={stepHasControls }
+        showStepper={stepHasStepper}
+        onBack={step === "DoneStep" ? undefined : backHandler}  
         onNext={headerNextHandler}
         nextLabel={headerNextLabel}
+        onStepClick={(stepId) => {
+    setStep(stepId as Step);
+    scrollToOnboardingTop();}}
       />
 
       <section className="flex min-h-[60vh] md:min-h-[75vh] items-start md:items-center justify-center">
         <div className="w-full max-w-[1240px] transition-all duration-300">
           {step === "pinToolbar" && (
-            <PinToolbarStep onNext={() => setStep("chooseViewer")} />
+            <PinToolbarStep onNext={() => setStep("chooseViewer")} onBack={()=>setStep("DoneStep")}/>
           )}
 
           {step === "chooseViewer" && (

@@ -2,12 +2,13 @@ import React from "react";
 import pinToolbarVideo from "@/assets/onboarding/PinToolbarStep.mp4";
 
 interface PinToolbarStepProps {
+  onBack: () => void;
   onNext: () => void;
 }
 
 
 
-export const PinToolbarStep: React.FC<PinToolbarStepProps> = ({ onNext }) => {
+export const PinToolbarStep: React.FC<PinToolbarStepProps> = () => {
   return (
     <div
       className="
@@ -27,7 +28,7 @@ export const PinToolbarStep: React.FC<PinToolbarStepProps> = ({ onNext }) => {
           Keep it one click away while you shop
         </p>
 
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <button
             type="button"
             onClick={onNext}
@@ -35,7 +36,7 @@ export const PinToolbarStep: React.FC<PinToolbarStepProps> = ({ onNext }) => {
           >
             Next
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* RIGHT: responsive video with fixed aspect ratio */}
