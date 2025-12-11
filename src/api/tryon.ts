@@ -4,7 +4,7 @@ import { getAccessToken } from '../utils/auth';
 
 // 创建 axios 实例用于试穿服务（第三方 API，不通过 proxy）
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5006/',
+  baseURL: 'https://tryon-images.faishion.ai',
   headers: {
     'Content-Type': 'application/json',
   },
