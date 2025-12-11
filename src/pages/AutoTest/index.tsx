@@ -44,7 +44,6 @@ const AutoTest: React.FC = () => {
                 <ResultsPage
                   userImages={userImages}
                   clothingImages={clothingImages}
-                  prompt = {finalPrompt}
                   testResults={testResults}
                   setTestResults={setTestResults}
                   selectedRowKeys={selectedRowKeys}
