@@ -11,14 +11,17 @@ const AutoTest: React.FC = () => {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
-  
+
   const [finalPrompt, setFinalPrompt] = useState("");
+  const [batchName, setBatchName] = useState("");
+
   const handleImagesSelected = (
     newUserImages: string[],
     newClothingImages: string[]
   ) => {
     setUserImages(newUserImages);
     setClothingImages(newClothingImages);
+    setTestResults([]); // Clear previous results when new images are selected
   };
 
   return (
@@ -31,11 +34,13 @@ const AutoTest: React.FC = () => {
           />
           <Route
             path='upload'
-            element={<UploadPage 
-                        onImagesSelected={handleImagesSelected}
-                        finalPrompt = {finalPrompt}
-                        setFinalPrompt = {setFinalPrompt}
-                         />}
+            element={<UploadPage
+              onImagesSelected={handleImagesSelected}
+              finalPrompt={finalPrompt}
+              setFinalPrompt={setFinalPrompt}
+              batchName={batchName}
+              setBatchName={setBatchName}
+            />}
           />
           <Route
             path='results'
@@ -44,7 +49,9 @@ const AutoTest: React.FC = () => {
                 <ResultsPage
                   userImages={userImages}
                   clothingImages={clothingImages}
-                  prompt = {finalPrompt}
+                  prompt={finalPrompt}
+                  batchName={batchName}
+                  vendor={vendor}
                   testResults={testResults}
                   setTestResults={setTestResults}
                   selectedRowKeys={selectedRowKeys}

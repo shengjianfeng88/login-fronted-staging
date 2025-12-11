@@ -89,8 +89,9 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 // import * as echarts from 'echarts';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { tryonApi } from '../../api/tryon';
+import { Provider } from 'react-redux';
 
 const { Title, Text } = Typography;
 
@@ -105,7 +106,11 @@ export interface TestResult {
   executionTime?: number;
   score?: number;
   savedAt?: string;
+
   modelId?: string;
+  prompt?: string;
+  batchName?: string;
+  promptVersion?: string;
 }
 
 // 自定义预览组件
@@ -374,9 +379,9 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
       className: 'whitespace-nowrap',
     },
     {
-      title: 'MODEL ID',
-      dataIndex: 'modelId',
-      key: 'modelId',
+      title: 'Provider',
+      dataIndex: 'vendor',
+      key: 'vendor',
       width: 150,
       className: 'whitespace-nowrap',
       render: (modelId, record: TestResult) => {
@@ -384,6 +389,94 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
           return <span className='text-gray-400'>-</span>;
         }
         return <span className='font-mono text-sm'>{modelId || '-'}</span>;
+      },
+    },
+    {
+      title: 'Prompt',
+      dataIndex: 'prompt',
+      key: 'prompt',
+      width: 200,
+      render: (prompt) => (
+        <span className='text-sm text-gray-600' title={prompt}>
+          {prompt || '-'}
+        </span>
+      ),
+    },
+    {
+      title: 'Prompt Version',
+      dataIndex: 'promptVersion',
+      key: 'promptVersion',
+      width: 150,
+      render: (promptVersion) => (
+        <span className='text-sm text-gray-600' title={promptVersion}>
+          {promptVersion || '-'}
+        </span>
+      ),
+    },
+    {
+      title: 'Saved Time',
+      dataIndex: 'savedAt',
+      key: 'savedAt',
+      width: 180,
+      className: 'whitespace-nowrap',
+      sorter: (a, b) => {
+        const timeA = a.savedAt ? new Date(a.savedAt).getTime() : 0;
+        const timeB = b.savedAt ? new Date(b.savedAt).getTime() : 0;
+        return timeA - timeB;
+      },
+      render: (savedAt) => {
+        if (!savedAt) {
+          return <span className='text-gray-400'>-</span>;
+        }
+
+        try {
+          const date = new Date(savedAt);
+          return (
+            <div className='text-sm'>
+              <div>{date.toLocaleDateString('zh-CN')}</div>
+              <div className='text-gray-500'>
+                {date.toLocaleTimeString('zh-CN')}
+              </div>
+            </div>
+          );
+        } catch {
+          return <span className='text-gray-400'>Format Error</span>;
+        }
+      },
+    },
+    {
+      title: 'Batch Name',
+      dataIndex: 'batchName',
+      key: 'batchName',
+      width: 150,
+      render: (batchName) => (
+        <span className='text-sm text-gray-800 font-medium'>
+          {batchName || '-'}
+        </span>
+      ),
+    },
+    {
+      title: 'Average_time',
+      key: 'averageTime',
+      width: 150,
+      render: (_, record) => {
+        if (!record.batchName) {
+          return <span className='text-gray-400'>-</span>;
+        }
+
+        // Filter all records with the same batchName from the current list
+        const batchRecords = testResults.filter(
+          (item) => item.batchName === record.batchName && item.status === 'success' && item.executionTime
+        );
+
+        if (batchRecords.length === 0) {
+          return <span className='text-gray-400'>-</span>;
+        }
+
+        const totalTime = batchRecords.reduce((sum, item) => sum + (item.executionTime || 0), 0);
+        const avgTime = totalTime / batchRecords.length;
+
+        return <span>{(avgTime / 1000).toFixed(2)}s</span>;
       },
     },
   ];
@@ -452,7 +545,8 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
 export interface ResultsProps {
   userImages: string[];
   clothingImages: string[];
-  prompt:string;
+  prompt: string;
+  batchName: string;
   testResults: TestResult[];
   setTestResults: React.Dispatch<React.SetStateAction<TestResult[]>>;
   selectedRowKeys: React.Key[];
@@ -465,6 +559,7 @@ const ResultsPage: React.FC<ResultsProps> = ({
   userImages,
   clothingImages,
   prompt,
+  batchName,
   testResults,
   setTestResults,
   selectedRowKeys,
@@ -475,6 +570,8 @@ const ResultsPage: React.FC<ResultsProps> = ({
   const [saving, setSaving] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const promptVersion = location.state?.promptVersion || '';
   const abortControllerRef = useRef<AbortController | null>(null);
   console.log(prompt)
   useEffect(() => {
@@ -494,7 +591,10 @@ const ResultsPage: React.FC<ResultsProps> = ({
               status: undefined,
               error: undefined,
               savedAt: undefined,
+
               modelId: undefined,
+              prompt: prompt,
+              batchName: batchName,
             });
             counter++;
           });
@@ -504,6 +604,20 @@ const ResultsPage: React.FC<ResultsProps> = ({
       generateTestResults();
     }
   }, [userImages, clothingImages, setTestResults, testResults.length]);
+
+  // Update prompt and batchName in testResults when props change
+  useEffect(() => {
+    if (testResults.length > 0) {
+      setTestResults((prev) =>
+        prev.map((item) => ({
+          ...item,
+          prompt: prompt,
+          batchName: batchName,
+          promptVersion: promptVersion, // Include promptVersion in test results
+        }))
+      );
+    }
+  }, [prompt, batchName, promptVersion, setTestResults, testResults.length]);
 
   const handleTestSelected = async () => {
     if (selectedRowKeys.length === 0) {
@@ -589,7 +703,10 @@ const ResultsPage: React.FC<ResultsProps> = ({
                   generatedResult: response.result_image_url || response.image,
                   executionTime: executionTime,
                   savedAt: new Date().toISOString(),
+
                   modelId: response.modelId,
+                  prompt: prompt,
+                  batchName: batchName,
                 };
               }
               return item;
@@ -710,7 +827,11 @@ const ResultsPage: React.FC<ResultsProps> = ({
         taskId: result.taskId,
         executionTime: result.executionTime,
         savedAt: result.savedAt,
+
         modelId: result.modelId,
+        prompt: result.prompt,
+        batch: result.batchName,
+        provider: result.vendor,
       }));
 
       // 调用保存接口

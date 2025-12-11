@@ -53,6 +53,11 @@ export type TestHistoryItem = {
   createdAt: string;
   __v: number;
   modelId?: string;
+  prompt?: string;
+  batchName?: string;
+  batch_name?: string; // Support backend snake_case
+  tryon_prompt?: string; // Support backend snake_case
+  promptVersion?: string;
 };
 
 export type TestHistoryQuery = {
@@ -63,6 +68,7 @@ export type TestHistoryQuery = {
   endTime?: string;
   page?: number;
   limit?: number;
+  batchName?: string; // Added batchName property
 };
 
 export type QueryTestHistoryResponse = {
@@ -97,6 +103,10 @@ export type TestResult = {
   status: string;
   taskId?: string;
   executionTime?: number;
+  prompt?: string;
+  tryon_prompt?: string; // Support backend snake_case
+  batchName?: string;
+  batch_name?: string; // Support backend snake_case
 };
 
 export type TryOnResponse = {
@@ -170,7 +180,7 @@ export const tryonApi = {
   async startTryon(
     userImage: string,
     clothingImage: string,
-    prompt:string,
+    prompt: string,
     signal?: AbortSignal
   ): Promise<TryOnResponse> {
     try {
@@ -178,7 +188,7 @@ export const tryonApi = {
       const response = await axiosInstance.post(
         '/test/tryon',
         {
-          // access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM5MzVmZWIzMjliNTI0MTNkOGQ2YTUiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSVN5dHEtQnNWcTItRTNXNGFoTG9CZTdYRVdZb0h1RmhoU3V4VjRLTy02cEdUTHlBPXM5Ni1jIiwiZW1haWwiOiJqaWFuZmVuZ3NoZW5nMEBnbWFpbC5jb20iLCJpYXQiOjE3NDk4ODg4NTgsImV4cCI6MTc0OTg4OTc1OH0.woufGJfaaL9fz6DDJmAc3GAxm4Bg2aGMLFqgxlbAhaA',
+          access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM5MzVmZWIzMjliNTI0MTNkOGQ2YTUiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSVN5dHEtQnNWcTItRTNXNGFoTG9CZTdYRVdZb0h1RmhoU3V4VjRLTy02cEdUTHlBPXM5Ni1jIiwiZW1haWwiOiJqaWFuZmVuZ3NoZW5nMEBnbWFpbC5jb20iLCJpYXQiOjE3NDk4ODg4NTgsImV4cCI6MTc0OTg4OTc1OH0.woufGJfaaL9fz6DDJmAc3GAxm4Bg2aGMLFqgxlbAhaA',
           face: userImage, // 直接使用 URL
           model: clothingImage, // 直接使用 URL
           prompt: prompt,

@@ -376,7 +376,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
       className: 'whitespace-nowrap',
     },
     {
-      title: 'MODEL ID',
+      title: 'Vendor',
       dataIndex: 'modelId',
       key: 'modelId',
       width: 150,
@@ -387,6 +387,28 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
         }
         return <span className='font-mono text-sm'>{modelId || '-'}</span>;
       },
+    },
+    {
+      title: 'Prompt',
+      dataIndex: 'prompt',
+      key: 'prompt',
+      width: 200,
+      render: (prompt) => (
+        <span className='text-sm text-gray-600' title={prompt}>
+          {prompt || '-'}
+        </span>
+      ),
+    },
+    {
+      title: 'Prompt Version',
+      dataIndex: 'promptVersion',
+      key: 'promptVersion',
+      width: 150,
+      render: (promptVersion) => (
+        <span className='text-sm text-gray-600' title={promptVersion}>
+          {promptVersion || '-'}
+        </span>
+      ),
     },
     {
       title: 'Saved Time',
@@ -418,6 +440,17 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
           return <span className='text-gray-400'>Format Error</span>;
         }
       },
+    },
+    {
+      title: 'Batch Name',
+      dataIndex: 'batchName',
+      key: 'batchName',
+      width: 150,
+      render: (batchName) => (
+        <span className='text-sm text-gray-800 font-medium'>
+          {batchName || '-'}
+        </span>
+      ),
     },
   ];
 
@@ -507,6 +540,11 @@ const HistoryPage: React.FC = () => {
     scoreCount: 0,
     successCount: 0,
   });
+  const [isAverageTimeModalVisible, setIsAverageTimeModalVisible] = useState(false);
+  const [batchNameInput, setBatchNameInput] = useState('');
+  const [promptVersionInput, setPromptVersionInput] = useState('');
+  const [vendorInput, setVendorInput] = useState('');
+  const [averageTime, setAverageTime] = useState<number | null>(null);
   const navigate = useNavigate();
   const isRequesting = useRef(false);
 
@@ -577,6 +615,36 @@ const HistoryPage: React.FC = () => {
     setIsStatModalVisible(true);
   };
 
+  const calculateBatchAverageTime = () => {
+    if (!batchNameInput.trim() || !promptVersionInput.trim() || !vendorInput.trim()) {
+      message.warning('Please enter Batch Name, Prompt Version, and Vendor');
+      return;
+    }
+
+    const batchResults = testResults.filter(
+      (result) =>
+        result.batchName === batchNameInput.trim() &&
+        result.promptVersion === promptVersionInput.trim() &&
+        result.modelId === vendorInput.trim() &&
+        result.executionTime &&
+        result.executionTime > 0
+    );
+
+    if (batchResults.length === 0) {
+      message.warning('No records found for the specified filters');
+      setAverageTime(null);
+      return;
+    }
+
+    const totalExecutionTime = batchResults.reduce(
+      (sum, result) => sum + (result.executionTime || 0),
+      0
+    );
+    const avgTime = totalExecutionTime / batchResults.length;
+
+    setAverageTime(parseFloat((avgTime / 1000).toFixed(2)));
+  };
+
   useEffect(() => {
     fetchTestHistory(1, 10);
   }, []);
@@ -595,6 +663,10 @@ const HistoryPage: React.FC = () => {
         limit: limit || pageSize,
       });
 
+      // Log the API response to inspect batchName and prompt fields
+      console.log('API Response:', response.data);
+      console.log('API Response for batchName:', response.data);
+
       const formattedResults = response.data.map(
         (result: TestHistoryItem, index: number) => ({
           key: result._id || index.toString(),
@@ -608,6 +680,9 @@ const HistoryPage: React.FC = () => {
           score: result.score,
           savedAt: result.savedAt,
           modelId: result.modelId,
+          prompt: result.tryon_prompt || result.prompt || 'No prompt provided',
+          promptVersion: result.promptVersion || 'No prompt version provided',
+          batchName: result.batchName || result.batch_name || 'No batch name',
         })
       );
 
@@ -629,13 +704,15 @@ const HistoryPage: React.FC = () => {
     }
   };
 
+  // Updated the filter logic to include Batch Name as a valid filter condition
   const handleFilterSearch = async () => {
     const hasTaskId = searchTaskId.trim() !== '';
-    const hasModelId = searchModelId.trim() !== '';
+    const hasVendor = vendorInput.trim() !== '' && vendorInput !== 'default';
     const hasTimeRange = timeRange && timeRange[0] && timeRange[1];
+    const hasBatchName = batchNameInput.trim() !== ''; // Check if Batch Name is provided
 
-    if (!hasTaskId && !hasModelId && !hasTimeRange) {
-      message.warning('Please enter at least one filter condition (TaskId, Model ID, or time range)');
+    if (!hasTaskId && !hasVendor && !hasTimeRange && !hasBatchName) {
+      message.warning('Please enter at least one filter condition (TaskId, Vendor, Batch Name, or time range)');
       return;
     }
 
@@ -643,22 +720,28 @@ const HistoryPage: React.FC = () => {
     try {
       const query: TestHistoryQuery = {
         queryType: 'byFilter',
-        page: 1, // 每次筛选都回到第一页
+        page: 1, // Reset to the first page
         limit: pageSize,
       };
 
       if (hasTaskId) {
         query.taskId = searchTaskId.trim();
       }
-      if (hasModelId) {
-        query.modelId = searchModelId.trim();
+      if (hasVendor) {
+        query.modelId = vendorInput.trim();
       }
       if (hasTimeRange) {
         query.startTime = timeRange![0].toISOString();
         query.endTime = timeRange![1].toISOString();
       }
+      if (hasBatchName) {
+        query.batchName = batchNameInput.trim(); // Add Batch Name to the query
+      }
 
       const response = await tryonApi.queryTestHistory(query);
+
+      // Debug log to inspect the API response
+      console.log('Filtered API Response:', response);
 
       const formattedResults = response.data.map(
         (result: TestHistoryItem, index: number) => ({
@@ -673,6 +756,9 @@ const HistoryPage: React.FC = () => {
           score: result.score,
           savedAt: result.savedAt,
           modelId: result.modelId,
+          prompt: result.tryon_prompt || result.prompt || 'No prompt provided',
+          promptVersion: result.promptVersion || 'No prompt version provided',
+          batchName: result.batchName || result.batch_name || 'No batch name',
         })
       );
 
@@ -688,8 +774,10 @@ const HistoryPage: React.FC = () => {
         setCurrentPage(1);
       }
       setIsFiltered(true);
+
+      const filteredCount = formattedResults.length;
       message.success(
-        `Found ${response.pagination?.total || formattedResults.length} records`
+        `Found ${filteredCount} record${filteredCount !== 1 ? 's' : ''} matching the filter criteria`
       );
     } catch (error) {
       const e = error as Error;
@@ -705,10 +793,12 @@ const HistoryPage: React.FC = () => {
     setTimeRange(dates);
   };
 
+  // Updated the reset functionality to reset the Vendor filter to 'Default (Auto-Select)'
   const handleResetSearch = () => {
     setSearchTaskId('');
     setSearchModelId('');
     setTimeRange(null);
+    setVendorInput('default'); // Reset Vendor filter to default
     setIsFiltered(false);
     fetchTestHistory(1, 10);
   };
@@ -752,6 +842,9 @@ const HistoryPage: React.FC = () => {
               score: result.score,
               savedAt: result.savedAt,
               modelId: result.modelId,
+              prompt: result.tryon_prompt || result.prompt || 'No prompt provided',
+              promptVersion: result.promptVersion || 'No prompt version provided',
+              batchName: result.batchName || result.batch_name || 'No batch name',
             })
           );
           setTestResults(formattedResults);
@@ -848,6 +941,25 @@ const HistoryPage: React.FC = () => {
     navigate('/auto-test/results');
   };
 
+  const handleBatchNameFilter = () => {
+    if (!batchNameInput.trim()) {
+      message.warning('Please enter a Batch Name to filter');
+      return;
+    }
+
+    const filteredResults = testResults.filter(
+      (result) => result.batchName === batchNameInput.trim()
+    );
+
+    if (filteredResults.length === 0) {
+      message.warning('No records found for the specified Batch Name');
+      return;
+    }
+
+    setTestResults(filteredResults);
+    message.success(`Filtered results for Batch Name: "${batchNameInput}"`);
+  };
+
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='max-w-7xl mx-auto px-4 py-6'>
@@ -883,17 +995,28 @@ const HistoryPage: React.FC = () => {
                   className='!rounded-button'
                 />
               </div>
-              <div className='flex items-center gap-2' style={{ flex: 1.5 }}>
-                <Text className='font-semibold whitespace-nowrap'>
-                  Model ID:
-                </Text>
+              <div className='flex items-center gap-2' style={{ flex: 1 }}>
+                <Text className='font-semibold whitespace-nowrap'>Batch Name:</Text>
                 <Input
-                  placeholder='Please enter modelId'
-                  value={searchModelId}
-                  onChange={(e) => setSearchModelId(e.target.value)}
-                  onPressEnter={handleFilterSearch}
+                  placeholder='Please enter Batch Name'
+                  value={batchNameInput}
+                  onChange={(e) => setBatchNameInput(e.target.value)}
+                  onPressEnter={handleBatchNameFilter}
                   className='!rounded-button'
                 />
+              </div>
+              <div className='flex items-center gap-2' style={{ flex: 1.5 }}>
+                <Text className='font-semibold whitespace-nowrap'>Vendor:</Text>
+                <select
+                  className='w-full border p-3 rounded mt-2'
+                  value={vendorInput}
+                  onChange={(e) => setVendorInput(e.target.value)}
+                >
+                  <option value='default'>Default (Auto-Select)</option>
+                  <option value='juguang'>Juguang</option>
+                  <option value='veoflow'>VeoFlow</option>
+                  <option value='gemini'>Google Gemini</option>
+                </select>
               </div>
               <div className='flex items-center gap-2' style={{ flex: 1.5 }}>
                 <Text className='font-semibold whitespace-nowrap'>
@@ -1027,6 +1150,54 @@ const HistoryPage: React.FC = () => {
         <p className='text-sm text-gray-500'>
           * Score statistics based on {averages.scoreCount} valid scored records (score &gt; 0).
         </p>
+      </Modal>
+
+      <Modal
+        title="Calculate Average Time"
+        open={isAverageTimeModalVisible}
+        onCancel={() => setIsAverageTimeModalVisible(false)}
+        footer={null}
+        centered
+        destroyOnClose
+      >
+        <div className="flex flex-col gap-4">
+          <Input
+            placeholder="Enter Batch Name"
+            value={batchNameInput}
+            onChange={(e) => setBatchNameInput(e.target.value)}
+            className="!rounded-button"
+          />
+          <Input
+            placeholder="Enter Prompt Version"
+            value={promptVersionInput}
+            onChange={(e) => setPromptVersionInput(e.target.value)}
+            className="!rounded-button"
+          />
+          <select
+            className="w-full border p-3 rounded mt-2"
+            value={vendorInput}
+            onChange={(e) => setVendorInput(e.target.value)}
+          >
+            <option value="default">Default (Auto-Select)</option>
+            <option value="juguang">Juguang</option>
+            <option value="veoflow">VeoFlow</option>
+            <option value="gemini">Google Gemini</option>
+          </select>
+          <Button
+            type="primary"
+            onClick={calculateBatchAverageTime}
+            className="!rounded-button"
+          >
+            Calculate
+          </Button>
+          {averageTime !== null && (
+            <div className="mt-4">
+              <Typography.Text>
+                Average Time for Batch "{batchNameInput}", Prompt Version "{promptVersionInput}", Vendor "{vendorInput}": {averageTime}s
+              </Typography.Text>
+            </div>
+          )}
+        </div>
       </Modal>
     </div>
   );
