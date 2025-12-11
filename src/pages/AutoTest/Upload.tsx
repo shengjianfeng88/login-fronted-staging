@@ -98,7 +98,7 @@ const UploadPage: React.FC<UploadProps> = ({
           message.error(response.error || 'Image upload failed');
         }
       } catch (error) {
-        console.error('Image upload failed:', error);
+        console.error('Image upload failed :', error);
         message.error('Image upload failed, please try again');
       } finally {
         setUploading(false);
@@ -243,46 +243,6 @@ const UploadPage: React.FC<UploadProps> = ({
           </Button>
         </div>
 
-        <div className="space-y-4 animate-in fade-in duration-200">
-      {/* Helper Text */}
-      <div>
-        <label className="font-semibold block mb-1">Prompt</label>
-        <textarea
-          className="w-full border p-2 rounded focus:ring-2 focus:ring-black outline-none"
-          placeholder="eg: Create a tryon showing the person from the first image....."
-          value={tryonPrompt}
-          onChange={(e) => setTryonPrompt(e.target.value)}
-          rows={2}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div>
-          <label className="font-semibold text-sm block mb-1">Background</label>
-          <input
-            className="w-full border p-2 rounded focus:ring-2 focus:ring-black outline-none"
-            placeholder="e.g., beach"
-            value={backgroundPrompt}
-            onChange={(e) => setBackgroundPrompt(e.target.value)}
-          />
-        </div>
-      </div>
-    </div>
-    
-    {/* VENDOR SELECTOR */}
-        <div>
-          <label className="font-semibold">Vendor</label>
-          <select
-            className="w-full border p-3 rounded mt-2"
-            value={vendor}
-            onChange={(e) => setVendor(e.target.value as Vendor)}
-          >
-            <option value="default">Default (Auto-Select)</option>
-            <option value="juguang">Juguang</option>
-            <option value="veoflow">VeoFlow</option>
-            <option value="gemini">Google Gemini</option>
-          </select>
-        </div>
 
       </div>
       <Modal
