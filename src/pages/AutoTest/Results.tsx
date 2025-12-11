@@ -106,6 +106,11 @@ export interface TestResult {
   score?: number;
   savedAt?: string;
   modelId?: string;
+  // === NEW BATCH FIELDS ===
+  batch?: string;
+  prompt?: string;
+  provider?: string;
+  background?: string;       // background prompt
 }
 
 // 自定义预览组件
@@ -476,7 +481,8 @@ const ResultsPage: React.FC<ResultsProps> = ({
   const abortControllerRef = useRef<AbortController | null>(null);
   type Provider = "default" | "juguang" | "veoflow" | "gemini"
   const [provider, setProvider] = useState<Provider>("default")
-  const [prompt, setPrompt] = useState<string>("")
+  const [tryonPrompt, setTryonPrompt] = useState<string>("")
+  const [background, setBackground] = useState<string>("")
   const [batch, setBatch] = useState<string>("")
 
 
@@ -545,6 +551,14 @@ const ResultsPage: React.FC<ResultsProps> = ({
               return item;
             })
           );
+          const parts = [];
+          if (tryonPrompt.trim()) parts.push(`tryon_prompt : ${tryonPrompt.trim()}`);
+          if (background.trim()) parts.push(`background : ${background.trim()}`);
+          if (provider.trim() && provider !== "default") {
+              parts.push(`provider: ${provider.trim()}`);
+          } 
+          const prompt = parts.join(" | ");
+
 
           // Call tryon API, pass signal for abort
           const response = await tryonApi.startTryon(
@@ -800,54 +814,69 @@ const ResultsPage: React.FC<ResultsProps> = ({
             </Button>
           </div>
         </div>
-        <div className="bg-white shadow rounded-lg p-4 mb-4 border border-gray-200">
-  <h4 className="text-md font-semibold mb-3">Batch Settings</h4>
+      <div className="bg-white shadow rounded-lg p-4 mb-4 border border-gray-200">
+        <h4 className="text-md font-semibold mb-3">Batch Settings</h4>
+        {/* Batch Name + Provider */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          {/* Batch Name */}
+          <div>
+            <label className="font-medium text-sm block mb-1">Batch Name</label>
+            <input
+              type="text"
+              className="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-black outline-none"
+              placeholder="e.g. Batch 01"
+              value={batch}
+              onChange={(e) => setBatch(e.target.value)}
+            />
+          </div>
 
-  {/* Batch Name + Provider (compact row) */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            {/* Provider */}
+            <div>
+              <label className="font-medium text-sm block mb-1">Provider(API)</label>
+              <select
+                className="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-black outline-none"
+                value={provider}
+                onChange={(e) => setProvider(e.target.value as Provider)}
+              >
+                <option value="default">Default</option>
+                <option value="juguang">Juguang</option>
+                <option value="veoflow">VeoFlow</option>
+                <option value="gemini">Gemini</option>
+              </select>
+            </div>
 
-    {/* Batch Name */}
-    <div>
-      <label className="font-medium text-sm block mb-1">Batch Name</label>
-      <input
-        type="text"
-        className="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-black outline-none"
-        placeholder="e.g. Batch 01"
-        value={batch}
-        onChange={(e) => setBatch(e.target.value)}
-      />
+        </div>
+
+        {/* Prompt + Background in one row */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+
+          {/* Prompt = 3/4 width */}
+          <div className="md:col-span-3">
+            <label className="font-medium text-sm block mb-1">Prompt</label>
+            <textarea
+              className="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-black outline-none"
+              placeholder="Describe your try-on prompt..."
+              value={tryonPrompt}
+              onChange={(e) => setTryonPrompt(e.target.value)}
+              rows={2}
+            />
+          </div>
+
+          {/* Background = 1/4 width */}
+          <div className="md:col-span-1">
+            <label className="font-medium text-sm block mb-1">Background</label>
+            <textarea
+              className="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-black outline-none"
+              placeholder="Describe background (optional)..."
+              value={background}
+              onChange={(e) => setBackground(e.target.value)}
+              rows={2}
+            />
+          </div>
+
+      </div>
+
     </div>
-
-    {/* Provider */}
-    <div>
-      <label className="font-medium text-sm block mb-1">Provider</label>
-      <select
-        className="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-black outline-none"
-        value={provider}
-        onChange={(e) => setProvider(e.target.value as Provider)}
-      >
-        <option value="default">Default</option>
-        <option value="juguang">Juguang</option>
-        <option value="veoflow">VeoFlow</option>
-        <option value="gemini">Gemini</option>
-      </select>
-    </div>
-
-  </div>
-
-  {/* Prompt (compact) */}
-  <div className="mb-2">
-    <label className="font-medium text-sm block mb-1">Prompt</label>
-    <textarea
-      className="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-black outline-none"
-      placeholder="Describe your try-on prompt..."
-      value={prompt}
-      onChange={(e) => setPrompt(e.target.value)}
-      rows={2}
-    />
-  </div>
-</div>
-
 
 
         <div className='flex gap-6'>
