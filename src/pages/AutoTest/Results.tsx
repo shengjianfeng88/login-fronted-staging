@@ -800,8 +800,6 @@ const ResultsPage: React.FC<ResultsProps> = ({
             </Button>
           </div>
         </div>
-
-
         <div className="bg-white shadow rounded-lg p-4 mb-4 border border-gray-200">
   <h4 className="text-md font-semibold mb-3">Batch Settings</h4>
 
