@@ -5,6 +5,8 @@ interface PinToolbarStepProps {
   onNext: () => void;
 }
 
+
+
 export const PinToolbarStep: React.FC<PinToolbarStepProps> = ({ onNext }) => {
   return (
     <div
@@ -38,15 +40,22 @@ export const PinToolbarStep: React.FC<PinToolbarStepProps> = ({ onNext }) => {
 
       {/* RIGHT: responsive video with fixed aspect ratio */}
       <div className="flex w-full md:flex-1 items-center justify-center">
-        <div className="w-full max-w-[706px] aspect-[706/507] flex items-center justify-center">
-          <video
-            src={pinToolbarVideo}
-            className="w-full h-full object-contain rounded-[42px]"
-            autoPlay
-            loop
-            muted
-            playsInline
-          />
+        <div className="w-full max-w-[706px]">
+
+          {/* VIDEO WITH ASPECT RATIO */}
+          <div className="aspect-[706/507] w-full relative rounded-[42px] overflow-hidden">
+            <video
+              src={pinToolbarVideo}
+              className="w-full h-full object-contain"
+              autoPlay
+              loop
+              controls
+              muted
+              playsInline
+            />
+
+          </div>
+
         </div>
       </div>
     </div>

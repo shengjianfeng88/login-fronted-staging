@@ -7,6 +7,7 @@ interface ChatbotStepProps {
 }
 
 export const ChatbotStep: React.FC<ChatbotStepProps> = () => {
+  
   return (
     <div className="flex flex-col w-full h-full">
      <section className="w-full flex flex-col items-center">
@@ -32,7 +33,7 @@ export const ChatbotStep: React.FC<ChatbotStepProps> = () => {
       rounded-[18px]
       border-[7px] border-[#6A5ACD]
       shadow-[0_4px_14.7px_rgba(0,0,0,0.25)]
-      overflow-hidden bg-white
+      overflow-hidden bg-white relative
     "
   >
     <video
@@ -42,6 +43,7 @@ export const ChatbotStep: React.FC<ChatbotStepProps> = () => {
       loop
       muted
       playsInline
+      controls
     />
   </div>
 </div>

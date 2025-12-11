@@ -35,7 +35,7 @@ export const AllinOnePlaceProps: React.FC<AllinOnePlaceProps> = () => {
     border-[7px] border-[#6A5ACD]
     bg-white
     shadow-[0_4px_4px_rgba(0,0,0,0.25)]
-    overflow-hidden
+    overflow-hidden relative
       "
     >
             <video
@@ -45,7 +45,9 @@ export const AllinOnePlaceProps: React.FC<AllinOnePlaceProps> = () => {
               loop
               muted
               playsInline
+              controls
             />
+      
           </div>
         </div>
       </section>
