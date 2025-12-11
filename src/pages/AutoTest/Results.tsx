@@ -452,7 +452,6 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = ({
 export interface ResultsProps {
   userImages: string[];
   clothingImages: string[];
-  prompt:string;
   testResults: TestResult[];
   setTestResults: React.Dispatch<React.SetStateAction<TestResult[]>>;
   selectedRowKeys: React.Key[];
@@ -464,7 +463,6 @@ export interface ResultsProps {
 const ResultsPage: React.FC<ResultsProps> = ({
   userImages,
   clothingImages,
-  prompt,
   testResults,
   setTestResults,
   selectedRowKeys,
@@ -476,7 +474,12 @@ const ResultsPage: React.FC<ResultsProps> = ({
   const [isCancelling, setIsCancelling] = useState(false);
   const navigate = useNavigate();
   const abortControllerRef = useRef<AbortController | null>(null);
-  console.log(prompt)
+  type Provider = "default" | "juguang" | "veoflow" | "gemini"
+  const [provider, setProvider] = useState<Provider>("default")
+  const [prompt, setPrompt] = useState<string>("")
+  const [batch, setBatch] = useState<string>("")
+
+
   useEffect(() => {
     // 只在 testResults 为空时初始化
     if (testResults.length === 0) {
@@ -797,6 +800,58 @@ const ResultsPage: React.FC<ResultsProps> = ({
             </Button>
           </div>
         </div>
+
+
+        <div className="bg-white shadow rounded-lg p-4 mb-4 border border-gray-200">
+  <h4 className="text-md font-semibold mb-3">Batch Settings</h4>
+
+  {/* Batch Name + Provider (compact row) */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+
+    {/* Batch Name */}
+    <div>
+      <label className="font-medium text-sm block mb-1">Batch Name</label>
+      <input
+        type="text"
+        className="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-black outline-none"
+        placeholder="e.g. Batch 01"
+        value={batch}
+        onChange={(e) => setBatch(e.target.value)}
+      />
+    </div>
+
+    {/* Provider */}
+    <div>
+      <label className="font-medium text-sm block mb-1">Provider</label>
+      <select
+        className="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-black outline-none"
+        value={provider}
+        onChange={(e) => setProvider(e.target.value as Provider)}
+      >
+        <option value="default">Default</option>
+        <option value="juguang">Juguang</option>
+        <option value="veoflow">VeoFlow</option>
+        <option value="gemini">Gemini</option>
+      </select>
+    </div>
+
+  </div>
+
+  {/* Prompt (compact) */}
+  <div className="mb-2">
+    <label className="font-medium text-sm block mb-1">Prompt</label>
+    <textarea
+      className="w-full border p-2 rounded text-sm focus:ring-1 focus:ring-black outline-none"
+      placeholder="Describe your try-on prompt..."
+      value={prompt}
+      onChange={(e) => setPrompt(e.target.value)}
+      rows={2}
+    />
+  </div>
+</div>
+
+
+
         <div className='flex gap-6'>
           <div className='flex-grow'>
             <TestResultsTable
